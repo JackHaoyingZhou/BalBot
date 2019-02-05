@@ -6,6 +6,7 @@
 
 // External Libraries
 #include <Arduino.h>
+#include <CppUtil.h>
 #include <Timer.h>
 #include <Pid.h>
 
@@ -15,16 +16,17 @@
 #include <Imu.h>
 #include <MotorL.h>
 #include <MotorR.h>
+#include <Bluetooth.h>
 
 /**
  * Macros
  */
 
-// Program prints debug to USB serial at 115200 baud.
-// #define SERIAL_DEBUG
-
 // Program estimates max control frequency.
 // #define GET_MAX_CTRL_FREQ
+
+// Disables motor control.
+// #define DISABLE_MOTORS
 
 /**
  * Controller Interfaces
@@ -34,19 +36,20 @@ Pid pid_pitch(
 	pid_pitch_ki,
 	pid_pitch_kd,
 	-v_bat, v_bat, f_ctrl);
-Pid pid_pos(
-	pid_pos_kp,
-	pid_pos_ki,
-	pid_pos_kd,
-	-pitch_max, pitch_max, f_ctrl);
 Timer timer;
+
+/**
+ * State Variables
+ */
+float pos_cmd = 0.0f;
 
 /**
  * @brief Initializes Balbot.
  */
 void setup()
 {
-	// Initialize IMU
+	// Initialize Peripherals
+	Bluetooth::init();
 	Imu::init();
 
 	// Initialize Motors
@@ -54,12 +57,6 @@ void setup()
 	digitalWrite(pin_motor_en, HIGH);
 	MotorL::init();
 	MotorR::init();
-
-#ifdef SERIAL_DEBUG
-	// Initialize Serial Debug
-	Serial.begin(115200);
-	Serial.println("SERIAL_DEBUG");
-#endif
 }
 
 /**
@@ -70,35 +67,46 @@ void loop()
 	// Start timing
 	timer.tic();
 
-	// Update state estimators
+	// Update namespaces
 	Imu::update();
 	MotorL::update();
 	MotorR::update();
+	Bluetooth::update();
 
-	// Estimate position from encoders
-	const float angle_L = MotorL::get_angle();
-	const float angle_R = MotorR::get_angle();
-	const float robot_pos = r_wheel * 0.5 * (angle_L + angle_R);
+	// Estimate velocities from encoders
+	/*
+	const float lin_vel_L = wheel_radius * MotorL::get_velocity();
+	const float lin_vel_R = wheel_radius * MotorR::get_velocity();
+	const float lin_vel = 0.5 * (lin_vel_L + lin_vel_R);
+	const float yaw_vel = (lin_vel_R - lin_vel_L) * wheel_base_inv;
+	*/
 
-	// Control position with pitch
-	const float pitch_cmd = pid_pos.update(0.0f - robot_pos);
-	
+	// Open-loop velocity control
+	const float v_vel = open_loop_vel_gain * Bluetooth::get_vel_cmd();
+	const float v_yaw = open_loop_yaw_gain * Bluetooth::get_yaw_cmd();
+
 	// Control pitch with voltage
-	const float pitch_error = pitch_cmd - Imu::get_pitch();
-	const float v_pid = -pid_pitch.update(pitch_error);
-	const float v_cmd_L = v_pid + motor_kv * MotorL::get_velocity();
-	const float v_cmd_R = v_pid + motor_kv * MotorR::get_velocity();
+	const float pitch_setpt = 0.0f;
+	const float pitch_error = pitch_setpt - Imu::get_pitch();
+	const float v_pitch = -pid_pitch.update(pitch_error);
+	const float v_ff_L = motor_kv * MotorL::get_velocity();
+	const float v_ff_R = motor_kv * MotorR::get_velocity();
+	float v_cmd_L = v_pitch + v_ff_L + v_vel - v_yaw;
+	float v_cmd_R = v_pitch - v_ff_R + v_vel + v_yaw;
+	v_cmd_L = clamp_limit(v_cmd_L, -v_bat, v_bat);
+	v_cmd_R = clamp_limit(v_cmd_R, -v_bat, v_bat);
 
 	// Send voltage commands to motors
+#ifndef DISABLE_MOTORS
 	MotorL::set_voltage(v_cmd_L);
 	MotorR::set_voltage(v_cmd_R);
+#endif
 
 #ifdef GET_MAX_CTRL_FREQ
 	// Estimate maximum possible control frequency
 	const float f_ctrl_max = 1.0f / timer.toc();
 	MotorL::set_voltage(0.0f);
 	MotorR::set_voltage(0.0f);
-	Serial.begin(115200);
 	Serial.println("GET_MAX_CTRL_FREQ");
 	Serial.println("Max ctrl freq: " + String(f_ctrl_max));
 	while(1);
