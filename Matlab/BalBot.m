@@ -1,28 +1,47 @@
-% Set up Xbox controller
+%% BalBot Communication and Logging
+% Created by Dan Oates (WPI Class of 2020)
+
+%% Setup
+
+% Constants
+vel_cmd_max = 0.5;
+yaw_cmd_max = 3.0;
+
+% Setup Xbox controller
 xbox = XboxController(1, 0.015);
 
-% Log vectors
-log_size = 1000;
-log_t = zeros(log_size, 1);
-log_vel_cmd = zeros(log_size, 1);
-log_yaw_cmd = zeros(log_size, 1);
-log_pitch = zeros(log_size, 1);
+% Create log vectors
+log_size = 5000;
+t = zeros(log_size, 1);
+vel_cmd = zeros(log_size, 1);
+yaw_cmd = zeros(log_size, 1);
+lin_vel = zeros(log_size, 1);
+yaw_vel = zeros(log_size, 1);
+volts_L = zeros(log_size, 1);
+volts_R = zeros(log_size, 1);
 
-% Communication loop
-i_log = 1;
-log_timer = Timer();
-log_timer.tic();
+%% Communication loop
+
+% Initialize loop counting and timing
+i = 1;                  % Loop counter
+log_timer = Timer();    % Loop timer
+
 while 1
     % Get commands from joystick
     js = xbox.LJS();
-    vel_cmd = 0.05 * js(2);
-    yaw_cmd = -0.5 * js(1);
+    vel_cmd(i) = vel_cmd_max * js(2);
+    yaw_cmd(i) = -yaw_cmd_max * js(1);
     
     % Communicate with robot
-    comms.write_float(vel_cmd);
-    comms.write_float(yaw_cmd);
-    if comms.wait(4, 1)
-        pitch = comms.read_float();
+    comms.write_float(vel_cmd(i));
+    comms.write_float(yaw_cmd(i));
+    if comms.wait(16, 1)
+        lin_vel(i) = comms.read_float();
+        yaw_vel(i) = comms.read_float();
+        volts_L(i) = comms.read_float();
+        volts_R(i) = comms.read_float();
+        t(i) = log_timer.toc();
+        
     else
         error('Communication timeout.')
     end
@@ -31,46 +50,38 @@ while 1
     clc
     disp('BalBot Controller')
     disp(' ')
-    disp(['Vel cmd: ' num2str(vel_cmd) ' [m/s]'])
-    disp(['Yaw cmd: ' num2str(yaw_cmd) ' [rad/s]'])
-    disp(['Pitch: ' num2str(pitch) ' rad'])
-    
-    % Log status
-    log_t(i_log) = log_timer.toc();
-    log_vel_cmd(i_log) = vel_cmd;
-    log_yaw_cmd(i_log) = yaw_cmd;
-    log_pitch(i_log) = pitch;
-    i_log = i_log + 1;
+    disp(['Vel cmd [m/s]: ' num2str(vel_cmd(i))])
+    disp(['Lin vel [m/s]: ' num2str(lin_vel(i))])
+    disp(['Yaw cmd [rad/s]: ' num2str(yaw_cmd(i))])
+    disp(['Yaw vel [rad/s]: ' num2str(yaw_vel(i))])
+    disp(['Volts L [V]: ' num2str(volts_L(i))])
+    disp(['Volts R [V]: ' num2str(volts_R(i))])
     
     % Exit condition
     if xbox.B()
-        disp('Program terminated')
+        disp('Program terminated by user.')
+        t = t(1:i);
+        vel_cmd = vel_cmd(1:i);
+        yaw_cmd = yaw_cmd(1:i);
+        lin_vel = lin_vel(1:i);
+        yaw_vel = yaw_vel(1:i);
+        volts_L = volts_L(1:i);
+        volts_R = volts_R(1:i);
+        break
+    elseif i == log_size
+        disp('Program terminated by time limit.')
         break
     end
+    
+    % Increment loop counter
+    i = i + 1;
 end
+disp(' ')
 
-% Crop log vectors
-n_log = i_log - 1;
-log_t = log_t(1:n_log);
-log_vel_cmd = log_vel_cmd(1:n_log);
-log_yaw_cmd = log_yaw_cmd(1:n_log);
-log_pitch = log_pitch(1:n_log);
-
-% Generate plots
-
-% Pitch Control
-figure(1)
-clf
-hold on
-grid on
-title('Pitch Angle')
-xlabel('Time [s]')
-ylabel('Pitch [rad]')
-plot(log_t, log_pitch, 'b-')
-xlim([min(log_t), max(log_t)])
+%% Generate plots
 
 % Velocity Control
-figure(2)
+figure(1)
 clf
 
 % Linear Velocity
@@ -79,9 +90,10 @@ hold on, grid on
 title('Linear Velocity')
 xlabel('Time [s]')
 ylabel('Velocity [m/s]')
-plot(log_t, log_vel_cmd, 'b--')
-legend('Setpoint')
-xlim([min(log_t), max(log_t)])
+plot(t, vel_cmd, 'k--')
+plot(t, lin_vel, 'b-')
+legend('Setpoint', 'Measured')
+xlim([min(t), max(t)])
 
 % Yaw Velocity
 subplot(1, 2, 2)
@@ -89,6 +101,18 @@ hold on, grid on
 title('Yaw Velocity')
 xlabel('Time [s]')
 ylabel('Velocity [rad/s]')
-plot(log_t, log_yaw_cmd, 'b--')
-legend('Setpoint')
-xlim([min(log_t), max(log_t)])
+plot(t, yaw_cmd, 'k--')
+plot(t, yaw_vel, 'b-')
+legend('Setpoint', 'Measured')
+xlim([min(t), max(t)])
+
+% Voltage commands
+figure(2)
+clf, hold on, grid on
+title('Voltage Commands')
+xlabel('Time [s]')
+ylabel('Voltage [V]')
+plot(t, volts_L, 'b-')
+plot(t, volts_R, 'r-')
+legend('Left', 'Right')
+xlim([min(t), max(t)])

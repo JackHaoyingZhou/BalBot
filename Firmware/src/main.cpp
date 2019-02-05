@@ -6,9 +6,7 @@
 
 // External Libraries
 #include <Arduino.h>
-#include <CppUtil.h>
 #include <Timer.h>
-#include <Pid.h>
 
 // Project Libraries
 #include <BalBot.h>
@@ -17,6 +15,7 @@
 #include <MotorL.h>
 #include <MotorR.h>
 #include <Bluetooth.h>
+#include <Controller.h>
 
 /**
  * Macros
@@ -28,20 +27,8 @@
 // Disables motor control.
 // #define DISABLE_MOTORS
 
-/**
- * Controller Interfaces
- */
-Pid pid_pitch(
-	pid_pitch_kp,
-	pid_pitch_ki,
-	pid_pitch_kd,
-	-v_bat, v_bat, f_ctrl);
+// Control loop timer
 Timer timer;
-
-/**
- * State Variables
- */
-float pos_cmd = 0.0f;
 
 /**
  * @brief Initializes Balbot.
@@ -72,34 +59,12 @@ void loop()
 	MotorL::update();
 	MotorR::update();
 	Bluetooth::update();
-
-	// Estimate velocities from encoders
-	/*
-	const float lin_vel_L = wheel_radius * MotorL::get_velocity();
-	const float lin_vel_R = wheel_radius * MotorR::get_velocity();
-	const float lin_vel = 0.5 * (lin_vel_L + lin_vel_R);
-	const float yaw_vel = (lin_vel_R - lin_vel_L) * wheel_base_inv;
-	*/
-
-	// Open-loop velocity control
-	const float v_vel = open_loop_vel_gain * Bluetooth::get_vel_cmd();
-	const float v_yaw = open_loop_yaw_gain * Bluetooth::get_yaw_cmd();
-
-	// Control pitch with voltage
-	const float pitch_setpt = 0.0f;
-	const float pitch_error = pitch_setpt - Imu::get_pitch();
-	const float v_pitch = -pid_pitch.update(pitch_error);
-	const float v_ff_L = motor_kv * MotorL::get_velocity();
-	const float v_ff_R = motor_kv * MotorR::get_velocity();
-	float v_cmd_L = v_pitch + v_ff_L + v_vel - v_yaw;
-	float v_cmd_R = v_pitch - v_ff_R + v_vel + v_yaw;
-	v_cmd_L = clamp_limit(v_cmd_L, -v_bat, v_bat);
-	v_cmd_R = clamp_limit(v_cmd_R, -v_bat, v_bat);
+	Controller::update();
 
 	// Send voltage commands to motors
 #ifndef DISABLE_MOTORS
-	MotorL::set_voltage(v_cmd_L);
-	MotorR::set_voltage(v_cmd_R);
+	MotorL::set_voltage(Controller::get_motor_L_cmd());
+	MotorR::set_voltage(Controller::get_motor_R_cmd());
 #endif
 
 #ifdef GET_MAX_CTRL_FREQ
