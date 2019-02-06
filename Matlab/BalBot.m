@@ -4,8 +4,8 @@
 %% Setup
 
 % Constants
-vel_cmd_max = 0.5;
-yaw_cmd_max = 3.0;
+vel_cmd_max = 0.10;
+yaw_cmd_max = 2.0;
 
 % Setup Xbox controller
 xbox = XboxController(1, 0.015);
@@ -43,7 +43,7 @@ while 1
         t(i) = log_timer.toc();
         
     else
-        error('Communication timeout.')
+        disp('Communication timeout.')
     end
     
     % Display status:

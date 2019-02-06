@@ -5,6 +5,7 @@
 #include "Bluetooth.h"
 #include <BalBot.h>
 #include <Controller.h>
+#include <Imu.h>
 #include <SerialComms.h>
 
 namespace Bluetooth
@@ -36,7 +37,7 @@ void Bluetooth::update()
 		vel_cmd = comms.read_float();
 		yaw_cmd = comms.read_float();
 		comms.write_float(Controller::get_lin_vel());
-		comms.write_float(Controller::get_yaw_vel());
+		comms.write_float(Imu::get_yaw_vel());
 		comms.write_float(Controller::get_motor_L_cmd());
 		comms.write_float(Controller::get_motor_R_cmd());
 	}

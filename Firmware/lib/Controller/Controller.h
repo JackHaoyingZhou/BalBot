@@ -9,7 +9,6 @@ namespace Controller
 {
 	void update();
 	float get_lin_vel();
-	float get_yaw_vel();
 	float get_motor_L_cmd();
 	float get_motor_R_cmd();
 }

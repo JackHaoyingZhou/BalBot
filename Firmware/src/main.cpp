@@ -55,10 +55,10 @@ void loop()
 	timer.tic();
 
 	// Update namespaces
+	Bluetooth::update();
 	Imu::update();
 	MotorL::update();
 	MotorR::update();
-	Bluetooth::update();
 	Controller::update();
 
 	// Send voltage commands to motors

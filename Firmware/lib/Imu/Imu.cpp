@@ -23,6 +23,7 @@ namespace Imu
 	// State Variables
 	bool first_frame = true;
 	Gaussian pitch;
+	float yaw_vel;
 }
 
 /**
@@ -39,7 +40,10 @@ void Imu::init()
  */
 void Imu::update()
 {
+	// Get new readings from IMU
 	imu.update();
+
+	// Pitch estimation Kalman Filter
 	const Gaussian acc_y(imu.get_acc_y(), acc_var);		// Y-acceleration [m/s^2]
 	const Gaussian acc_z(imu.get_acc_z(), acc_var);		// Z-acceleration [m/s^2]
 	const Gaussian pitch_acc = -atan2(acc_y, acc_z);	// Accelerometer pitch estimate [rad]
@@ -54,6 +58,11 @@ void Imu::update()
 		const Gaussian pitch_gyr = pitch + pitch_vel * t_ctrl;	// Gyro pitch estimate [rad]
 		pitch = fuse(pitch_gyr, pitch_acc);						// Fused pitch estimate [rad]
 	}
+
+	// Yaw velocity estimation
+	yaw_vel =
+		imu.get_vel_z() * cosf(pitch.get_mean()) -
+		imu.get_vel_y() * sinf(pitch.get_mean());
 }
 
 /**
@@ -62,4 +71,12 @@ void Imu::update()
 float Imu::get_pitch()
 {
 	return pitch.get_mean();
+}
+
+/**
+ * @brief Returns IMU yaw velocity estimate.
+ */
+float Imu::get_yaw_vel()
+{
+	return yaw_vel;
 }

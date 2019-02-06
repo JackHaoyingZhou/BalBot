@@ -5,6 +5,7 @@
 #include "MotorL.h"
 #include <BalBot.h>
 #include <PinDefs.h>
+#include <Imu.h>
 #include <HBridgeMotor.h>
 #include <QuadEncoder.h>
 #include <Differentiator.h>
@@ -12,7 +13,7 @@
 namespace MotorL
 {
 	// Hardware Interfaces
-	HBridgeMotor motor(pin_lm_pwm, pin_lm_fwd, pin_lm_rev, v_bat);
+	HBridgeMotor motor(pin_lm_pwm, pin_lm_fwd, pin_lm_rev, Vb);
 	QuadEncoder encoder(pin_lenc_a, pin_lenc_b, encoder_cpr);
 
 	// Digital Filters
@@ -46,7 +47,7 @@ void MotorL::init()
  */
 void MotorL::update()
 {
-	angle = encoder.read();
+	angle = encoder.read() + Imu::get_pitch();
 	velocity = angle_diff.update(angle);
 }
 

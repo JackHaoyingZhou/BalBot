@@ -11,4 +11,5 @@ namespace Imu
 	void init();
 	void update();
 	float get_pitch();
+	float get_yaw_vel();
 }
