@@ -10,14 +10,18 @@
 #include <Imu.h>
 #include <CppUtil.h>
 #include <Pid.h>
+#include <SlewLimiter.h>
 
 namespace Controller
 {
-	// Yaw PID Controller
+	// Controllers
 	Pid yaw_pid(yaw_kp, yaw_ki, yaw_kd, -Vb, Vb, f_ctrl);
+	SlewLimiter vel_slew(acc_max, f_ctrl);
 
 	// State Variables
 	float lin_vel = 0.0f;	// Linear velocity [m/s]
+	float vel_cmd = 0.0f;	// Linear velocity cmd [m/s]
+	float yaw_cmd = 0.0f;	// Yaw velocity cmd [rad/s]
 	float v_cmd_L = 0.0f;	// Left motor voltage cmd [V]
 	float v_cmd_R = 0.0f;	// Right motor voltage cmd [V]
 }
@@ -27,6 +31,11 @@ namespace Controller
  */
 void Controller::update()
 {
+	// Process teleop commands
+	vel_cmd = vel_slew.update(Bluetooth::get_vel_cmd());
+	vel_cmd = clamp_limit(vel_cmd, -vel_max, vel_max);
+	yaw_cmd = clamp_limit(Bluetooth::get_yaw_cmd(), -yaw_max, yaw_max);
+
 	// Estimate state variables
 	lin_vel = Rw_div_2 * (MotorL::get_velocity() + MotorR::get_velocity());
 	
@@ -35,11 +44,11 @@ void Controller::update()
 	float v_avg = v_avg_ref
 		+ ss_K1 * (0.0f - Imu::get_pitch_vel())
 		+ ss_K2 * (0.0f - Imu::get_pitch())
-		+ ss_K3 * (Bluetooth::get_vel_cmd() - lin_vel);
+		+ ss_K3 * (vel_cmd - lin_vel);
 	v_avg = clamp_limit(v_avg, -Vb, Vb);
 
 	// Yaw velocity control
-	const float yaw_error = Bluetooth::get_yaw_cmd() - Imu::get_yaw_vel();
+	const float yaw_error = yaw_cmd - Imu::get_yaw_vel();
 	const float v_diff = yaw_pid.update(yaw_error);
 
 	// Motor voltage commands

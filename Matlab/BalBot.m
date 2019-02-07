@@ -39,6 +39,11 @@ classdef BalBot < handle
             %DISCONNECT Disconnects from bluetooth.
             obj.serial_comms.close();
         end
+        function set_cmd_limits(obj, vel_max, yaw_max)
+            %SET_CMD_LIMITS Sets linear and yaw velocity limits.
+            obj.vel_cmd_max = vel_max;
+            obj.yaw_cmd_max = yaw_max;
+        end
         function status = send_cmds(obj, vel, yaw)
             %SEND_CMDS Sends linear and yaw velocity commands and returns
             %robot status struct.
@@ -58,4 +63,3 @@ classdef BalBot < handle
         end
     end
 end
-

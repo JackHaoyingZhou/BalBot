@@ -3,8 +3,13 @@
 
 %% Setup
 
+% Speed command limits
+vel_max = 0.8;  % Max linear velocity [m/s]
+yaw_max = 1.6;  % Max yaw velocity [rad/s]
+
 % Start Balbot
 StartBalBot;
+balbot.set_cmd_limits(vel_max, yaw_max);
 
 % Init Xbox controller
 xbox = Xbox(1, 0.08, 0);
