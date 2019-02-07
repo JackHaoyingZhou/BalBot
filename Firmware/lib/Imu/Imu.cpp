@@ -23,6 +23,7 @@ namespace Imu
 	// State Variables
 	bool first_frame = true;
 	Gaussian pitch;
+	Gaussian pitch_vel;
 	float yaw_vel;
 }
 
@@ -54,7 +55,7 @@ void Imu::update()
 	}
 	else
 	{
-		const Gaussian pitch_vel(-imu.get_vel_x(), vel_var);	// Gyro pitch velocity [rad/s]
+		pitch_vel = Gaussian(-imu.get_vel_x(), vel_var);		// Gyro pitch velocity [rad/s]
 		const Gaussian pitch_gyr = pitch + pitch_vel * t_ctrl;	// Gyro pitch estimate [rad]
 		pitch = fuse(pitch_gyr, pitch_acc);						// Fused pitch estimate [rad]
 	}
@@ -71,6 +72,14 @@ void Imu::update()
 float Imu::get_pitch()
 {
 	return pitch.get_mean();
+}
+
+/**
+ * @brief Returns IMU pitch velocity measurement.
+ */
+float Imu::get_pitch_vel()
+{
+	return pitch_vel.get_mean();
 }
 
 /**

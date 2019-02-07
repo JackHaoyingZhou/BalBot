@@ -20,18 +20,12 @@ const float Vb = 12.0f;		// Battery voltage [V]
 
 // Controller Constants
 const float f_ctrl = 100.0f;	// Control frequency [Hz]
-const float pitch_max = 0.1f;	// Max pitch command [rad]
-
-// Controller Gains
-const float pitch_kp = 42.5f;	// Pitch P-gain [V/rad]
-const float pitch_ki = 260.0f;	// Pitch I-gain [V/(rad*s)]
-const float pitch_kd = 1.95f;	// Pitch D-gain [V/(rad/s)]]
 const float yaw_kp = -0.120f;	// Yaw P-gain [V/(rad/s)]
 const float yaw_ki = 25.7f;		// Yaw I-gain [V/rad]
 const float yaw_kd = 0.0f;		// Yaw D-gain [V/(rad/s^2)]
-const float vel_kp = 0.05f;		// Velocity P-gain [rad/(m/s)]
-const float vel_ki = 0.0f;		// Velocity I-gain [rad/m]
-const float vel_kd = 0.0f;		// Velocity D-gain [rad/(m/s^2)]
+const float ss_K1 = -1.27f;		// SS K1 [V/(rad/s)]
+const float ss_K2 = -13.3f;		// SS K2 [V/rad]
+const float ss_K3 = -12.9f;		// SS K3 [V/(m/s)]
 
 // Derived Constants
 const float Kv_div_Rw = Kv / Rw;	// Velocity back-EMF [V/(m/s)]

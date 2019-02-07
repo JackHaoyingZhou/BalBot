@@ -13,10 +13,8 @@
 
 namespace Controller
 {
-	// PID Controllers
-	Pid pitch_pid(pitch_kp, pitch_ki, pitch_kd, -Vb, Vb, f_ctrl);
+	// Yaw PID Controller
 	Pid yaw_pid(yaw_kp, yaw_ki, yaw_kd, -Vb, Vb, f_ctrl);
-	Pid vel_pid(vel_kp, vel_ki, vel_kd, -pitch_max, pitch_max, f_ctrl);
 
 	// State Variables
 	float lin_vel = 0.0f;	// Linear velocity [m/s]
@@ -31,13 +29,16 @@ void Controller::update()
 {
 	// Estimate state variables
 	lin_vel = Rw_div_2 * (MotorL::get_velocity() + MotorR::get_velocity());
+	
+	// Pitch-Velocity State-Space Control
+	const float v_avg_ref = Kv_div_Rw * lin_vel;
+	float v_avg = v_avg_ref
+		+ ss_K1 * (0.0f - Imu::get_pitch_vel())
+		+ ss_K2 * (0.0f - Imu::get_pitch())
+		+ ss_K3 * (Bluetooth::get_vel_cmd() - lin_vel);
+	v_avg = clamp_limit(v_avg, -Vb, Vb);
 
-	// Update controllers
-	const float vel_error  = Bluetooth::get_vel_cmd() - lin_vel;
-	const float pitch_setpt = vel_pid.update(vel_error);
-	const float pitch_error = Imu::get_pitch() - pitch_setpt;
-	const float v_avg_ff = Kv_div_Rw * lin_vel;
-	const float v_avg = pitch_pid.update(pitch_error, v_avg_ff);
+	// Yaw velocity control
 	const float yaw_error = Bluetooth::get_yaw_cmd() - Imu::get_yaw_vel();
 	const float v_diff = yaw_pid.update(yaw_error);
 

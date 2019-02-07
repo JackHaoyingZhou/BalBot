@@ -1,118 +1,61 @@
-%% BalBot Communication and Logging
-% Created by Dan Oates (WPI Class of 2020)
+classdef BalBot
+    %BALBOT Class for interfacing with self-balancing robot.
+    %   Created by Dan Oates (WPI Class of 2020)
 
-%% Setup
-
-% Constants
-vel_cmd_max = 0.10;
-yaw_cmd_max = 2.0;
-
-% Setup Xbox controller
-xbox = XboxController(1, 0.015);
-
-% Create log vectors
-log_size = 5000;
-t = zeros(log_size, 1);
-vel_cmd = zeros(log_size, 1);
-yaw_cmd = zeros(log_size, 1);
-lin_vel = zeros(log_size, 1);
-yaw_vel = zeros(log_size, 1);
-volts_L = zeros(log_size, 1);
-volts_R = zeros(log_size, 1);
-
-%% Communication loop
-
-% Initialize loop counting and timing
-i = 1;                  % Loop counter
-log_timer = Timer();    % Loop timer
-
-while 1
-    % Get commands from joystick
-    js = xbox.LJS();
-    vel_cmd(i) = vel_cmd_max * js(2);
-    yaw_cmd(i) = -yaw_cmd_max * js(1);
-    
-    % Communicate with robot
-    comms.write_float(vel_cmd(i));
-    comms.write_float(yaw_cmd(i));
-    if comms.wait(16, 1)
-        lin_vel(i) = comms.read_float();
-        yaw_vel(i) = comms.read_float();
-        volts_L(i) = comms.read_float();
-        volts_R(i) = comms.read_float();
-        t(i) = log_timer.toc();
-        
-    else
-        disp('Communication timeout.')
+    properties (Access = private)
+        device_name;    % Bluetooth device name [String]
+        serial_comms;   % Embedded comms interface [SerialComms]
+        vel_cmd_max;    % Max velocity cmd [m/s]
+        yaw_cmd_max;    % Max yaw velocity cmd [rad/s]
     end
     
-    % Display status:
-    clc
-    disp('BalBot Controller')
-    disp(' ')
-    disp(['Vel cmd [m/s]: ' num2str(vel_cmd(i))])
-    disp(['Lin vel [m/s]: ' num2str(lin_vel(i))])
-    disp(['Yaw cmd [rad/s]: ' num2str(yaw_cmd(i))])
-    disp(['Yaw vel [rad/s]: ' num2str(yaw_vel(i))])
-    disp(['Volts L [V]: ' num2str(volts_L(i))])
-    disp(['Volts R [V]: ' num2str(volts_R(i))])
-    
-    % Exit condition
-    if xbox.B()
-        disp('Program terminated by user.')
-        t = t(1:i);
-        vel_cmd = vel_cmd(1:i);
-        yaw_cmd = yaw_cmd(1:i);
-        lin_vel = lin_vel(1:i);
-        yaw_vel = yaw_vel(1:i);
-        volts_L = volts_L(1:i);
-        volts_R = volts_R(1:i);
-        break
-    elseif i == log_size
-        disp('Program terminated by time limit.')
-        break
+    methods
+        function obj = BalBot(device_name, vel_max, yaw_max)
+            %BALBOT Construct an instance of this class.
+            %   Detailed explanation goes here
+            obj.device_name = device_name;
+            obj.vel_cmd_max = vel_max;
+            obj.yaw_cmd_max = yaw_max;
+        end
+        function connect(obj)
+            %CONNECT Resets bluetooth connection.
+            instrreset;
+            bt_info = instrhwinfo('bluetooth');
+            n = length(bt_info.RemoteNames);
+            bt = [];
+            for i = 1 : n
+                remote_name = bt_info.RemoteNames{i};
+                if strcmp(remote_name, obj.device_name)
+                    bt = Bluetooth(remote_name, 1);
+                end
+            end
+            if isempty(bt)
+                error('Bluetooth not found.')
+            end
+            obj.serial_comms = SerialComms(bt);
+            obj.serial_comms.open();
+        end
+        function disconnect(obj)
+            %DISCONNECT Disconnects from bluetooth.
+            obj.serial_comms.close();
+        end
+        function status = send_cmds(vel, yaw)
+            %SEND_CMDS Sends linear and yaw velocity commands and returns
+            %robot status struct.
+            vel = clamp_limit(vel, -obj.vel_cmd_max, obj.vel_cmd_max);
+            yaw = clamp_limit(yaw, -obj.yaw_cmd_max, obj.yaw_cmd_max);
+            obj.serial_comms.write_float(vel);
+            obj.serial_comms.write_float(yaw);
+            status = struct();
+            if comms.wait(16, 1)
+                status.lin_vel = obj.serial_comms.read_float();
+                status.yaw_vel = obj.serial_comms.read_float();
+                status.volts_L = obj.serial_comms.read_float();
+                status.volts_R = obj.serial_comms.read_float();
+            else
+                error('Communication timeout.')
+            end
+        end
     end
-    
-    % Increment loop counter
-    i = i + 1;
 end
-disp(' ')
 
-%% Generate plots
-
-% Velocity Control
-figure(1)
-clf
-
-% Linear Velocity
-subplot(1, 2, 1)
-hold on, grid on
-title('Linear Velocity')
-xlabel('Time [s]')
-ylabel('Velocity [m/s]')
-plot(t, vel_cmd, 'k--')
-plot(t, lin_vel, 'b-')
-legend('Setpoint', 'Measured')
-xlim([min(t), max(t)])
-
-% Yaw Velocity
-subplot(1, 2, 2)
-hold on, grid on
-title('Yaw Velocity')
-xlabel('Time [s]')
-ylabel('Velocity [rad/s]')
-plot(t, yaw_cmd, 'k--')
-plot(t, yaw_vel, 'b-')
-legend('Setpoint', 'Measured')
-xlim([min(t), max(t)])
-
-% Voltage commands
-figure(2)
-clf, hold on, grid on
-title('Voltage Commands')
-xlabel('Time [s]')
-ylabel('Voltage [V]')
-plot(t, volts_L, 'b-')
-plot(t, volts_R, 'r-')
-legend('Left', 'Right')
-xlim([min(t), max(t)])
