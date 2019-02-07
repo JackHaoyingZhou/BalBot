@@ -3,16 +3,11 @@
 
 %% Setup
 
-% Teleop constants
-name = 'BalBot';    % Bluetooth device name [String]
-vel_max = 0.1;      % Max linear velocity [m/s]
-yaw_max = 1.5;      % Max yaw velocity [rad/s]
-xbox_dz = 0.015;    % Xbox controller dead zone [0-1]
+% Start Balbot
+StartBalBot;
 
-% Connect to peripherals
-xbox = XboxController(1, xbox_dz);
-balbot = BalBot(name, vel_max, yaw_max);
-balbot.connect();
+% Init Xbox controller
+xbox = Xbox(1, 0.08, 0);
 
 % Create log vectors
 log_size = 5000;
@@ -28,10 +23,10 @@ volts_R = zeros(log_size, 1);
 i = 1;                  % Loop counter
 log_timer = Timer();    % Loop timer
 while 1
-    % Get commands from joystick
-    js = xbox.LJS();
-    vel_cmd(i) = vel_max * js(2);
-    yaw_cmd(i) = -yaw_max * js(1);
+    
+    % Get commands from Xbox controller
+    vel_cmd(i) = vel_max * xbox.trig();
+    yaw_cmd(i) = -yaw_max * xbox.LJx();
     
     % Communicate with robot
     status = balbot.send_cmds(vel_cmd(i), yaw_cmd(i));

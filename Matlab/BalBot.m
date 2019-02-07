@@ -1,4 +1,4 @@
-classdef BalBot
+classdef BalBot < handle
     %BALBOT Class for interfacing with self-balancing robot.
     %   Created by Dan Oates (WPI Class of 2020)
 
@@ -39,7 +39,7 @@ classdef BalBot
             %DISCONNECT Disconnects from bluetooth.
             obj.serial_comms.close();
         end
-        function status = send_cmds(vel, yaw)
+        function status = send_cmds(obj, vel, yaw)
             %SEND_CMDS Sends linear and yaw velocity commands and returns
             %robot status struct.
             vel = clamp_limit(vel, -obj.vel_cmd_max, obj.vel_cmd_max);
@@ -47,7 +47,7 @@ classdef BalBot
             obj.serial_comms.write_float(vel);
             obj.serial_comms.write_float(yaw);
             status = struct();
-            if comms.wait(16, 1)
+            if obj.serial_comms.wait(16, 1)
                 status.lin_vel = obj.serial_comms.read_float();
                 status.yaw_vel = obj.serial_comms.read_float();
                 status.volts_L = obj.serial_comms.read_float();
