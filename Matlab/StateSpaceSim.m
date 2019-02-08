@@ -1,26 +1,6 @@
 %% BalBot State Space Control Simulator
 % Created by Dan Oates (WPI Class of 2020)
-clear
-clc
-
-%% Robot Constants
-
-% Base Constants
-Ix = 0.00238;   % Pitch inertia [kg*m^2]
-Iz = 0.00150;   % Yaw inertia [kg*m^2]
-m = 0.95;       % Robot mass [kg]
-g = 9.81;       % Gravity [m/s^2]
-dG = 0.028;     % Axis-to-CG distance [m]
-dB = 0.171;     % Wheel base [m]
-Rw = 0.0336;    % Wheel radius [m]
-Rm = 12.0;      % Motor resistnace [Ohm]
-Kv = 0.30;      % Motor back-EMF [V/(rad/s)]
-Kt = 0.44;      % Motor torque [N*m/A]
-
-% Derived Constants
-Gt = Rm/(2*Kt); % Torque gain [V/(N*m)]
-Gv = Kv/Rw;     % velocity gain [V/(m/s)]
-Tg = m*g*dG;    % Gravitational torque [N*m]
+BalBotConsts;
 
 %% Control Constants
 

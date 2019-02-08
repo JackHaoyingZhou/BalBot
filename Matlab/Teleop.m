@@ -1,18 +1,14 @@
 %% BalBot Teleoperation Program
-% Created by Dan Oates (WPI Class of 2020)
+%   Created by Dan Oates (WPI Class of 2020)
+clear
+clc
 
 %% Setup
 
-% Speed command limits
-vel_max = 0.8;  % Max linear velocity [m/s]
-yaw_max = 1.6;  % Max yaw velocity [rad/s]
-
-% Start Balbot
-StartBalBot;
-balbot.set_cmd_limits(vel_max, yaw_max);
-
-% Init Xbox controller
-xbox = Xbox(1, 0.08, 0);
+% BalBot Parameters
+name = 'BalBot';    % Bluetooth device name [String]
+vel_max = 0.8;      % Max linear velocity [m/s]
+yaw_max = 1.6;      % Max yaw velocity [rad/s]
 
 % Create log vectors
 log_size = 5000;
@@ -24,9 +20,16 @@ yaw_vel = zeros(log_size, 1);
 volts_L = zeros(log_size, 1);
 volts_R = zeros(log_size, 1);
 
+% Init Xbox controller
+xbox = Xbox(1, 0.08, 0);
+
+% Start Balbot
+balbot = BalBot(name, vel_max, yaw_max);
+balbot.connect();
+
 %% Communication loop
-i = 1;                  % Loop counter
-log_timer = Timer();    % Loop timer
+i = 1;              % Loop counter
+timer = Timer();    % Loop timer
 while 1
     
     % Get commands from Xbox controller
@@ -39,7 +42,7 @@ while 1
     yaw_vel(i) = status.yaw_vel;
     volts_L(i) = status.volts_L;
     volts_R(i) = status.volts_R;
-    t(i) = log_timer.toc();
+    t(i) = timer.toc();
     
     % Display status
     clc
@@ -55,23 +58,29 @@ while 1
     % Exit conditions
     if xbox.B()
         disp('Program terminated by user.')
-        vel_cmd = vel_cmd(1:i);
-        yaw_cmd = yaw_cmd(1:i);
-        lin_vel = lin_vel(1:i);
-        yaw_vel = yaw_vel(1:i);
-        volts_L = volts_L(1:i);
-        volts_R = volts_R(1:i);
-        t = t(1:i);
+        disp(' ')
         break
     elseif i == log_size
         disp('Program terminated by time limit.')
+        disp(' ')
         break
     end
     
     % Increment loop counter
     i = i + 1;
 end
-disp(' ')
+
+% Crop Time Vectors
+vel_cmd = vel_cmd(1:i);
+yaw_cmd = yaw_cmd(1:i);
+lin_vel = lin_vel(1:i);
+yaw_vel = yaw_vel(1:i);
+volts_L = volts_L(1:i);
+volts_R = volts_R(1:i);
+t = t(1:i);
+
+% Stop BalBot and disconnect
+balbot.send_cmds(0, 0);
 balbot.disconnect();
 
 %% Generate plots

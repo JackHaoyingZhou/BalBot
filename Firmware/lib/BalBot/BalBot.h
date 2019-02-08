@@ -18,10 +18,10 @@ const float Kv = 0.34f;		// Motor back-EMF [V/(rad/s)]
 const float Kt = 0.20f;		// Motor torque [N*m/A]
 const float Vb = 12.0f;		// Battery voltage [V]
 
-// Controller Constants
+// Controller Constantsz
 const float f_ctrl = 100.0f;	// Control frequency [Hz]
-const float yaw_kp = -0.229f;	// Yaw P-gain [V/(rad/s)]
-const float yaw_ki = 25.5f;		// Yaw I-gain [V/rad]
+const float yaw_kp = 0.0f;		// Yaw P-gain [V/(rad/s)]
+const float yaw_ki = 10.0f;		// Yaw I-gain [V/rad]
 const float yaw_kd = 0.0f;		// Yaw D-gain [V/(rad/s^2)]
 const float ss_K1 = -1.97f;		// SS K1 [V/(rad/s)]
 const float ss_K2 = -19.6f;		// SS K2 [V/rad]
