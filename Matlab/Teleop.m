@@ -9,6 +9,7 @@ clc
 name = 'BalBot';    % Bluetooth device name [String]
 vel_max = 0.8;      % Max linear velocity [m/s]
 yaw_max = 1.6;      % Max yaw velocity [rad/s]
+do_plots = 0;       % Plot generation flag
 
 % Create log vectors
 log_size = 5000;
@@ -67,7 +68,9 @@ while 1
     end
     
     % Increment loop counter
-    i = i + 1;
+    if do_plots
+        i = i + 1;
+    end
 end
 
 % Crop Time Vectors
@@ -84,40 +87,41 @@ balbot.send_cmds(0, 0);
 balbot.disconnect();
 
 %% Generate plots
+if do_plots
+    % Velocity Control
+    figure(1)
+    clf
 
-% Velocity Control
-figure(1)
-clf
+    % Linear Velocity
+    subplot(1, 2, 1)
+    hold on, grid on
+    title('Linear Velocity')
+    xlabel('Time [s]')
+    ylabel('Velocity [m/s]')
+    plot(t, vel_cmd, 'k--')
+    plot(t, lin_vel, 'b-')
+    legend('Setpoint', 'Measured')
+    xlim([min(t), max(t)])
 
-% Linear Velocity
-subplot(1, 2, 1)
-hold on, grid on
-title('Linear Velocity')
-xlabel('Time [s]')
-ylabel('Velocity [m/s]')
-plot(t, vel_cmd, 'k--')
-plot(t, lin_vel, 'b-')
-legend('Setpoint', 'Measured')
-xlim([min(t), max(t)])
+    % Yaw Velocity
+    subplot(1, 2, 2)
+    hold on, grid on
+    title('Yaw Velocity')
+    xlabel('Time [s]')
+    ylabel('Velocity [rad/s]')
+    plot(t, yaw_cmd, 'k--')
+    plot(t, yaw_vel, 'b-')
+    legend('Setpoint', 'Measured')
+    xlim([min(t), max(t)])
 
-% Yaw Velocity
-subplot(1, 2, 2)
-hold on, grid on
-title('Yaw Velocity')
-xlabel('Time [s]')
-ylabel('Velocity [rad/s]')
-plot(t, yaw_cmd, 'k--')
-plot(t, yaw_vel, 'b-')
-legend('Setpoint', 'Measured')
-xlim([min(t), max(t)])
-
-% Voltage commands
-figure(2)
-clf, hold on, grid on
-title('Voltage Commands')
-xlabel('Time [s]')
-ylabel('Voltage [V]')
-plot(t, volts_L, 'b-')
-plot(t, volts_R, 'r-')
-legend('Left', 'Right')
-xlim([min(t), max(t)])
+    % Voltage commands
+    figure(2)
+    clf, hold on, grid on
+    title('Voltage Commands')
+    xlabel('Time [s]')
+    ylabel('Voltage [V]')
+    plot(t, volts_L, 'b-')
+    plot(t, volts_R, 'r-')
+    legend('Left', 'Right')
+    xlim([min(t), max(t)])
+end

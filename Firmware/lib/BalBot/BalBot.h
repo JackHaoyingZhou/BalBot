@@ -33,7 +33,6 @@ const float acc_max = 0.8f;		// Acceleration limit [m/s^2]
 // Derived Constants
 const float Kv_div_Rw = Kv / Rw;	// Velocity back-EMF [V/(m/s)]
 const float t_ctrl = 1.0f / f_ctrl;	// Control period [s]
-const float dB_inv = 1.0f / dB;		// Wheel base inverse [1/m]
 const float Rw_div_2 = Rw / 2.0f;	// Half wheel radius [m]
 
 // Encoder Resolution [cnt/rev]
