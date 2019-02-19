@@ -48,6 +48,7 @@ void Imu::update()
 	const Gaussian acc_y(imu.get_acc_y(), acc_var);	// Y-acceleration [m/s^2]
 	const Gaussian acc_z(imu.get_acc_z(), acc_var);	// Z-acceleration [m/s^2]
 	const Gaussian pitch_acc = atan2(acc_y, acc_z);	// Accelerometer pitch estimate [rad]
+	pitch_vel = Gaussian(imu.get_vel_x(), vel_var);	// Gyro pitch velocity [rad/s]
 	if(first_frame)
 	{
 		first_frame = false;	// Reset first frame flag
@@ -55,7 +56,6 @@ void Imu::update()
 	}
 	else
 	{
-		pitch_vel = Gaussian(imu.get_vel_x(), vel_var);			// Gyro pitch velocity [rad/s]
 		const Gaussian pitch_gyr = pitch + pitch_vel * t_ctrl;	// Gyro pitch estimate [rad]
 		pitch = fuse(pitch_gyr, pitch_acc);						// Fused pitch estimate [rad]
 	}
