@@ -48,7 +48,7 @@ void MotorR::init()
  */
 void MotorR::update()
 {
-	angle = encoder.read() + Imu::get_pitch();
+	angle = encoder.read() - Imu::get_pitch();
 	velocity = angle_diff.update(angle);
 }
 

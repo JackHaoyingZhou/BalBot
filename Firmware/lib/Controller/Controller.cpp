@@ -15,7 +15,7 @@
 namespace Controller
 {
 	// Controllers
-	Pid yaw_pid(yaw_kp, yaw_ki, yaw_kd, -Vb, Vb, f_ctrl);
+	Pid yaw_pid(yaw_Kp, yaw_Ki, yaw_Kd, -Vb, Vb, f_ctrl);
 	SlewLimiter vel_slew(acc_max, f_ctrl);
 
 	// State Variables
@@ -37,10 +37,10 @@ void Controller::update()
 	yaw_cmd = clamp_limit(Bluetooth::get_yaw_cmd(), -yaw_max, yaw_max);
 
 	// Estimate state variables
-	lin_vel = Rw_div_2 * (MotorL::get_velocity() + MotorR::get_velocity());
+	lin_vel = dr_div_2 * (MotorL::get_velocity() + MotorR::get_velocity());
 	
 	// Pitch-Velocity State-Space Control
-	const float v_avg_ref = Kv_div_Rw * lin_vel;
+	const float v_avg_ref = Gv * vel_cmd;
 	float v_avg = v_avg_ref
 		+ ss_K1 * (0.0f - Imu::get_pitch_vel())
 		+ ss_K2 * (0.0f - Imu::get_pitch())
@@ -48,12 +48,21 @@ void Controller::update()
 	v_avg = clamp_limit(v_avg, -Vb, Vb);
 
 	// Yaw velocity control
+	const float yaw_ff = Gw * yaw_cmd;
 	const float yaw_error = yaw_cmd - Imu::get_yaw_vel();
-	const float v_diff = yaw_pid.update(yaw_error);
+	const float v_diff = yaw_pid.update(yaw_error, yaw_ff);
 
 	// Motor voltage commands
 	v_cmd_L = clamp_limit(v_avg - v_diff, -Vb, Vb);
 	v_cmd_R = clamp_limit(v_avg + v_diff, -Vb, Vb);
+
+	// Disable motors if tipped over
+	if(fabsf(Imu::get_pitch()) > pitch_max)
+	{
+		yaw_pid.reset();
+		v_cmd_L = 0.0f;
+		v_cmd_R = 0.0f;
+	}
 }
 
 /**
