@@ -46,9 +46,14 @@ const float ss_K2 = 3.0f*Mx/Gt*px*px + Tg/Gt;
 const float ss_K3 = -Mx*My/(Gt*Tg)*px*px*px - Gv;
 
 // Yaw Velocity PI-Controller Gains
+const float yaw_Kp = 0.0f;
+const float yaw_Ki = 5.0f;
+const float yaw_Kd = 0.0f;
+/** Analytical Gains
 const float yaw_Kp = (2*Mz/Gt)*pz - Gw;
 const float yaw_Ki = (Mz/Gt)*pz*pz;
 const float yaw_Kd = 0.0f;
+*/
 
 // Encoder Resolution [cnt/rev]
 const float encoder_cpr = 1320.0f;
