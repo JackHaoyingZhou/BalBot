@@ -6,10 +6,10 @@ clc
 %% Setup
 
 % BalBot Parameters
-name = 'BalBot';    % Bluetooth device name [String]
-vel_max = 0.8;      % Max linear velocity [m/s]
-yaw_max = 1.6;      % Max yaw velocity [rad/s]
-do_plots = 0;       % Plot generation flag
+name = 'ES3011_Bot01';  % Bluetooth device name [String]
+vel_max = 0.8;          % Max linear velocity [m/s]
+yaw_max = 1.6;          % Max yaw velocity [rad/s]
+do_plots = 0;           % Plot generation flag
 
 % Create log vectors
 log_size = 5000;

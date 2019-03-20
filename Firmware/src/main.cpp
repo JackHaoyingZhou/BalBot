@@ -24,8 +24,14 @@
 // Program estimates max control frequency.
 // #define GET_MAX_CTRL_FREQ
 
+// Serial prints IMU calibration
+// #define CALIBRATE_IMU
+
 // Disables motor control.
 // #define DISABLE_MOTORS
+
+// Prints debug variables to USB serial.
+// #define SERIAL_DEBUG
 
 // Control loop timer
 Timer timer;
@@ -44,6 +50,12 @@ void setup()
 	digitalWrite(pin_motor_en, HIGH);
 	MotorL::init();
 	MotorR::init();
+
+#ifdef CALIBRATE_IMU
+	// Print IMU calibration values
+	Imu::calibrate();
+	while(1);
+#endif
 }
 
 /**
@@ -61,10 +73,20 @@ void loop()
 	MotorR::update();
 	Controller::update();
 
-	// Send voltage commands to motors
 #ifndef DISABLE_MOTORS
+	// Send voltage commands to motors
 	MotorL::set_voltage(Controller::get_motor_L_cmd());
 	MotorR::set_voltage(Controller::get_motor_R_cmd());
+#endif
+
+#ifdef SERIAL_DEBUG
+	// Print debug info to serial
+	Serial.println("Debug:");
+	Serial.println(MotorL::get_angle());
+	Serial.println(MotorR::get_angle());
+	Serial.println(Imu::get_pitch());
+	Serial.println();
+	delay(250);
 #endif
 
 #ifdef GET_MAX_CTRL_FREQ

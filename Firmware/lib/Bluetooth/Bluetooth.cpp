@@ -6,12 +6,12 @@
 #include <BalBot.h>
 #include <Controller.h>
 #include <Imu.h>
-#include <SerialComms.h>
+#include <SerialC.h>
 
 namespace Bluetooth
 {
 	// Hardware interfaces
-	SerialComms comms(Serial);
+	SerialC comms(Serial);
 
 	// Received commands
 	float vel_cmd = 0.0f;	// Linear velocity [m/s]

@@ -13,4 +13,5 @@ namespace Imu
 	float get_pitch();
 	float get_pitch_vel();
 	float get_yaw_vel();
+	void calibrate();
 }
