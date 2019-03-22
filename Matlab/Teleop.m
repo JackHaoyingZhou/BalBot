@@ -11,6 +11,18 @@ vel_max = 0.8;          % Max linear velocity [m/s]
 yaw_max = 1.6;          % Max yaw velocity [rad/s]
 do_plots = 0;           % Plot generation flag
 
+% Controller Settings
+ctrl_type = 'Nintendo64';
+switch ctrl_type
+    case 'Xbox360'
+        joy_dz = 0.08;
+        trig_dz = 0.01;
+        xbox = Xbox360(1, joy_dz, trig_dz);
+    case 'Nintendo64'
+        joy_dz = 0.04;
+        nin64 = Nintendo64(1, joy_dz);
+end
+
 % Create log vectors
 log_size = 5000;
 t = zeros(log_size, 1);
@@ -21,9 +33,6 @@ yaw_vel = zeros(log_size, 1);
 volts_L = zeros(log_size, 1);
 volts_R = zeros(log_size, 1);
 
-% Init Xbox controller
-xbox = Xbox(1, 0.08, 0);
-
 % Start Balbot
 balbot = BalBot(name, vel_max, yaw_max);
 balbot.connect();
@@ -33,9 +42,15 @@ i = 1;              % Loop counter
 timer = Timer();    % Loop timer
 while 1
     
-    % Get commands from Xbox controller
-    vel_cmd(i) = vel_max * xbox.trig();
-    yaw_cmd(i) = -yaw_max * xbox.LJx();
+    % Get commands from game controller
+    switch ctrl_type
+        case 'Xbox360'
+            vel_cmd(i) = vel_max * xbox.trig();
+            yaw_cmd(i) = -yaw_max * xbox.joy_Lx();
+        case 'Nintendo64'
+            vel_cmd(i) = vel_max * nin64.joy_y();
+            yaw_cmd(i) = -yaw_max * nin64.joy_x();
+    end
     
     % Communicate with robot
     status = balbot.send_cmds(vel_cmd(i), yaw_cmd(i));
@@ -57,7 +72,13 @@ while 1
     disp(['Volts R [V]: ' num2str(volts_R(i))])
     
     % Exit conditions
-    if xbox.B()
+    switch ctrl_type
+        case 'Xbox360'
+            exit = xbox.btn_B();
+        case 'Nintendo64'
+            exit = nin64.btn_B();
+    end
+    if exit
         disp('Program terminated by user.')
         disp(' ')
         break
