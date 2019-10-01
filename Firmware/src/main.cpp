@@ -17,24 +17,9 @@
 #include <Bluetooth.h>
 #include <Controller.h>
 
-/**
- * Macros
- */
-
-// Program estimates max control frequency.
-// #define GET_MAX_CTRL_FREQ
-
-// Serial prints IMU calibration
-// #define CALIBRATE_IMU
-
-// Disables motor control.
-// #define DISABLE_MOTORS
-
-// Prints debug variables to USB serial.
-// #define SERIAL_DEBUG
-
-// Control loop timer
-Timer timer;
+// Global Variables
+const uint32_t baud = 115200;	// Serial baud [bit/s]
+Timer timer;					// Controller timer
 
 /**
  * @brief Initializes Balbot.
@@ -51,7 +36,7 @@ void setup()
 	MotorL::init();
 	MotorR::init();
 
-#ifdef CALIBRATE_IMU
+#if defined(CALIBRATE_IMU)
 	// Print IMU calibration values
 	Imu::calibrate();
 	while(1);
@@ -73,13 +58,13 @@ void loop()
 	MotorR::update();
 	Controller::update();
 
-#ifndef DISABLE_MOTORS
+#if !defined(DISABLE_MOTORS)
 	// Send voltage commands to motors
 	MotorL::set_voltage(Controller::get_motor_L_cmd());
 	MotorR::set_voltage(Controller::get_motor_R_cmd());
 #endif
 
-#ifdef SERIAL_DEBUG
+#if defined(SERIAL_DEBUG)
 	// Print debug info to serial
 	Serial.println("Debug:");
 	Serial.println(MotorL::get_angle());
@@ -89,7 +74,7 @@ void loop()
 	delay(250);
 #endif
 
-#ifdef GET_MAX_CTRL_FREQ
+#if defined(GET_MAX_CTRL_FREQ)
 	// Estimate maximum possible control frequency
 	const float f_ctrl_max = 1.0f / timer.toc();
 	MotorL::set_voltage(0.0f);
@@ -99,6 +84,6 @@ void loop()
 	while(1);
 #endif
 
-	// Maintain timing
+	// Maintain loop timing
 	timer.wait_until(t_ctrl);
 }

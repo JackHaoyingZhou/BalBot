@@ -1,24 +1,23 @@
 /**
- * @file MotorR.cpp
+ * @file MotorL.cpp
  * @author Dan Oates (WPI Class of 2020)
  */
-#include "MotorR.h"
+#include "MotorL.h"
 #include <BalBot.h>
 #include <PinDefs.h>
 #include <Imu.h>
 #include <HBridgeMotor.h>
 #include <QuadEncoder.h>
-#include <Differentiator.h>
-#include <PinChangeInt.h>
+#include <DiscreteFilter.h>
 
-namespace MotorR
+namespace MotorL
 {
 	// Hardware Interfaces
-	HBridgeMotor motor(pin_rm_pwm, pin_rm_fwd, pin_rm_rev, Vb);
-	QuadEncoder encoder(pin_renc_a, pin_renc_b, encoder_cpr);
+	HBridgeMotor motor(pin_lm_pwm, pin_lm_fwd, pin_lm_rev, Vb);
+	QuadEncoder encoder(pin_lenc_a, pin_lenc_b, encoder_cpr);
 
 	// Digital Filters
-	Differentiator angle_diff(f_ctrl);
+	DiscreteFilter angle_diff = DiscreteFilter::make_dif(f_ctrl);
 
 	// State Variables
 	float angle;		// Encoder angle [rad]
@@ -33,20 +32,19 @@ namespace MotorR
  * @brief Initializes drive motor.
  * Enables motor and encoder, and sets up encoder ISRs.
  */
-void MotorR::init()
+void MotorL::init()
 {
 	motor.init();
 	motor.enable();
 	encoder.init();
-	attachPinChangeInterrupt(pin_renc_a, isr_A, CHANGE);
-	attachPinChangeInterrupt(pin_renc_b, isr_B, CHANGE);
-	angle_diff.init();
+	attachInterrupt(digitalPinToInterrupt(pin_lenc_a), isr_A, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(pin_lenc_b), isr_B, CHANGE);
 }
 
 /**
  * @brief Updates motor state estimates.
  */
-void MotorR::update()
+void MotorL::update()
 {
 	angle = encoder.read() - Imu::get_pitch();
 	velocity = angle_diff.update(angle);
@@ -55,7 +53,7 @@ void MotorR::update()
 /**
  * @brief Sends given voltage command to motor.
  */
-void MotorR::set_voltage(float v_cmd)
+void MotorL::set_voltage(float v_cmd)
 {
 	motor.set_voltage(v_cmd);
 }
@@ -63,7 +61,7 @@ void MotorR::set_voltage(float v_cmd)
 /**
  * @brief Returns encoder angle estimate.
  */
-float MotorR::get_angle()
+float MotorL::get_angle()
 {
 	return angle;
 }
@@ -71,7 +69,7 @@ float MotorR::get_angle()
 /**
  * @brief Returns encoder velocity estimate.
  */
-float MotorR::get_velocity()
+float MotorL::get_velocity()
 {
 	return velocity;
 }
@@ -79,7 +77,7 @@ float MotorR::get_velocity()
 /**
  * @brief Motor encoder A ISR.
  */
-void MotorR::isr_A()
+void MotorL::isr_A()
 {
 	encoder.interrupt_A();
 }
@@ -87,7 +85,7 @@ void MotorR::isr_A()
 /**
  * @brief Motor encoder B ISR.
  */
-void MotorR::isr_B()
+void MotorL::isr_B()
 {
 	encoder.interrupt_B();
 }

@@ -5,8 +5,7 @@
 #include "Imu.h"
 #include <BalBot.h>
 #include <Gaussian.h>
-
-#include <Arduino.h>
+#include <Mpu6050.h>
 
 namespace Imu
 {
@@ -14,11 +13,11 @@ namespace Imu
 	Mpu6050 imu;
 
 	// IMU Constants
-	const float vel_x_cal = +0.0037523943f;	// Gyro x calibration offset [rad/s]
-	const float vel_y_cal = -0.0639238800f;	// Gyro y calibration offset [rad/s]
-	const float vel_z_cal = -0.0190016570f;	// Gyro z calibration offset [rad/s]
-	const float vel_var = 0.0000022007782f;	// Angular velocity variance [(rad/s)^2]
-	const float acc_var = 0.0012027357000f;	// Acceleration variance [(m/s^2)^2]
+	const float vel_x_cal = -0.0767443330f;	// Gyro x calibration offset [rad/s]
+	const float vel_y_cal = +0.0393428880f;	// Gyro y calibration offset [rad/s]
+	const float vel_z_cal = +0.0022024342f;	// Gyro z calibration offset [rad/s]
+	const float vel_var = 0.0000035204512f;	// Angular velocity variance [(rad/s)^2]
+	const float acc_var = 0.0012492317000f;	// Acceleration variance [(m/s^2)^2]
 
 	// State Variables
 	bool first_frame = true;
