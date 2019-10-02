@@ -12,23 +12,52 @@ namespace Imu
 	// IMU Hardware Interface
 	Mpu6050 imu;
 
-	// IMU Constants
+	/**
+	 * IMU Constants
+	 * vel_x_cal = Gyro x calibration offset [rad/s]
+	 * vel_y_cal = Gyro y calibration offset [rad/s]
+	 * vel_z_cal = Gyro z calibration offset [rad/s]
+	 * vel_var = Angular velocity variance [(rad/s)^2]
+	 * acc_var = Acceleration variance [(m/s^2)^2]
+	 */
 #if ES3011_BOT_ID == 0
-	// Dan Oates Personal Robot
-	const float vel_x_cal = -0.0767443330f;	// Gyro x calibration offset [rad/s]
-	const float vel_y_cal = +0.0393428880f;	// Gyro y calibration offset [rad/s]
-	const float vel_z_cal = +0.0022024342f;	// Gyro z calibration offset [rad/s]
-	const float vel_var = 0.0000035204512f;	// Angular velocity variance [(rad/s)^2]
-	const float acc_var = 0.0012492317000f;	// Acceleration variance [(m/s^2)^2]
+	const float vel_x_cal = -0.0767443330f;
+	const float vel_y_cal = +0.0393428880f;
+	const float vel_z_cal = +0.0022024342f;
+	const float vel_var = 0.0000035204512f;
+	const float acc_var = 0.0012492317000f;
 #elif ES3011_BOT_ID == 1
-	// ES3011_Bot01
-	const float vel_x_cal = +0.0037523943f;	// Gyro x calibration offset [rad/s]
-	const float vel_y_cal = -0.0639238800f;	// Gyro y calibration offset [rad/s]
-	const float vel_z_cal = -0.0190016570f;	// Gyro z calibration offset [rad/s]
-	const float vel_var = 0.0000022007782f;	// Angular velocity variance [(rad/s)^2]
-	const float acc_var = 0.0012027357000f;	// Acceleration variance [(m/s^2)^2]
+	const float vel_x_cal = +0.0311310290f;
+	const float vel_y_cal = +0.0018575554f;
+	const float vel_z_cal = -0.0121866260f;
+	const float vel_var = 0.0000074203535f;
+	const float acc_var = 0.0006528628300f;
+#elif ES3011_BOT_ID == 2
+	const float vel_x_cal = -0.0138670760f;
+	const float vel_y_cal = -0.0743288400f;
+	const float vel_z_cal = -0.0213452480f;
+	const float vel_var = 0.0000040159848f;
+	const float acc_var = 0.0010868423000f;
+#elif ES3011_BOT_ID == 3
+#elif ES3011_BOT_ID == 4
+#elif ES3011_BOT_ID == 5
+#elif ES3011_BOT_ID == 6
+#elif ES3011_BOT_ID == 7
+#elif ES3011_BOT_ID == 8
+#elif ES3011_BOT_ID == 9
+#elif ES3011_BOT_ID == 10
+#elif ES3011_BOT_ID == 11
+#elif ES3011_BOT_ID == 12
+#elif ES3011_BOT_ID == 13
+#elif ES3011_BOT_ID == 14
+#elif ES3011_BOT_ID == 15
+#elif ES3011_BOT_ID == 16
+#elif ES3011_BOT_ID == 17
+#elif ES3011_BOT_ID == 18
+#elif ES3011_BOT_ID == 19
+#elif ES3011_BOT_ID == 20
 #else
-#error Must Select ES3011_BOT_ID in range [0, 20]
+#error Must define ES3011_BOT_ID in range [0, 20]
 #endif
 
 	// State Variables

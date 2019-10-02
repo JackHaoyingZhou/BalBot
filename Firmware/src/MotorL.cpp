@@ -6,6 +6,7 @@
 #include <BalBot.h>
 #include <PinDefs.h>
 #include <Imu.h>
+#include <EncoderDir.h>
 #include <HBridgeMotor.h>
 #include <QuadEncoder.h>
 #include <DiscreteFilter.h>
@@ -46,7 +47,7 @@ void MotorL::init()
  */
 void MotorL::update()
 {
-	angle = encoder.read() - Imu::get_pitch();
+	angle = EncoderDir::dir * encoder.read() - Imu::get_pitch();
 	velocity = angle_diff.update(angle);
 }
 

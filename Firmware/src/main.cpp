@@ -19,6 +19,7 @@
 
 // Global Variables
 const uint32_t baud = 115200;	// Serial baud [bit/s]
+uint32_t loop_count = 0;		// Control loop counter
 Timer timer;					// Controller timer
 
 /**
@@ -37,9 +38,11 @@ void setup()
 	MotorR::init();
 
 #if defined(CALIBRATE_IMU)
+
 	// Print IMU calibration values
 	Imu::calibrate();
 	while(1);
+
 #endif
 }
 
@@ -51,30 +54,28 @@ void loop()
 	// Start timing
 	timer.tic();
 
-	// Update namespaces
+	// Update subsystems
 	Bluetooth::update();
 	Imu::update();
 	MotorL::update();
 	MotorR::update();
 	Controller::update();
 
-#if !defined(DISABLE_MOTORS)
-	// Send voltage commands to motors
-	MotorL::set_voltage(Controller::get_motor_L_cmd());
-	MotorR::set_voltage(Controller::get_motor_R_cmd());
-#endif
-
 #if defined(SERIAL_DEBUG)
-	// Print debug info to serial
-	Serial.println("Debug:");
-	Serial.println(MotorL::get_angle());
-	Serial.println(MotorR::get_angle());
-	Serial.println(Imu::get_pitch());
-	Serial.println();
-	delay(250);
-#endif
 
-#if defined(GET_MAX_CTRL_FREQ)
+	// Print debug info to serial
+	MotorL::set_voltage(0.0f);
+	MotorR::set_voltage(0.0f);
+	if (loop_count % 25 == 0)
+	{
+		Serial.println("Motor L Angle [rad]: " + String(MotorL::get_angle(), 2));
+		Serial.println("Motor R Angle [rad]: " + String(MotorR::get_angle(), 2));
+		Serial.println("Pitch Angle [rad]: " + String(Imu::get_pitch(), 2));
+		Serial.println();
+	}
+
+#elif defined(GET_MAX_CTRL_FREQ)
+
 	// Estimate maximum possible control frequency
 	const float f_ctrl_max = 1.0f / timer.toc();
 	MotorL::set_voltage(0.0f);
@@ -82,8 +83,16 @@ void loop()
 	Serial.println("GET_MAX_CTRL_FREQ");
 	Serial.println("Max ctrl freq: " + String(f_ctrl_max));
 	while(1);
+
+#else
+
+	// Send voltage commands to motors
+	MotorL::set_voltage(Controller::get_motor_L_cmd());
+	MotorR::set_voltage(Controller::get_motor_R_cmd());
+
 #endif
 
 	// Maintain loop timing
+	loop_count++;
 	timer.wait_until(t_ctrl);
 }
