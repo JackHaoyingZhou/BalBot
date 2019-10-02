@@ -13,11 +13,23 @@ namespace Imu
 	Mpu6050 imu;
 
 	// IMU Constants
+#if ES3011_BOT_ID == 0
+	// Dan Oates Personal Robot
 	const float vel_x_cal = -0.0767443330f;	// Gyro x calibration offset [rad/s]
 	const float vel_y_cal = +0.0393428880f;	// Gyro y calibration offset [rad/s]
 	const float vel_z_cal = +0.0022024342f;	// Gyro z calibration offset [rad/s]
 	const float vel_var = 0.0000035204512f;	// Angular velocity variance [(rad/s)^2]
 	const float acc_var = 0.0012492317000f;	// Acceleration variance [(m/s^2)^2]
+#elif ES3011_BOT_ID == 1
+	// ES3011_Bot01
+	const float vel_x_cal = +0.0037523943f;	// Gyro x calibration offset [rad/s]
+	const float vel_y_cal = -0.0639238800f;	// Gyro y calibration offset [rad/s]
+	const float vel_z_cal = -0.0190016570f;	// Gyro z calibration offset [rad/s]
+	const float vel_var = 0.0000022007782f;	// Angular velocity variance [(rad/s)^2]
+	const float acc_var = 0.0012027357000f;	// Acceleration variance [(m/s^2)^2]
+#else
+#error Must Select ES3011_BOT_ID in range [0, 20]
+#endif
 
 	// State Variables
 	bool first_frame = true;
@@ -95,7 +107,7 @@ float Imu::get_yaw_vel()
 void Imu::calibrate()
 {
 	imu.calibrate();
-	Serial.println("IMU Calibration:");
+	Serial.println("IMU Calibration Code:");
 	Serial.println("Gyro x: " + String(imu.get_vel_x_cal(), 20) + " [rad/s]");
 	Serial.println("Gyro y: " + String(imu.get_vel_y_cal(), 20) + " [rad/s]");
 	Serial.println("Gyro z: " + String(imu.get_vel_z_cal(), 20) + " [rad/s]");
