@@ -17,19 +17,17 @@
 #include <Controller.h>
 
 // Global Variables
-uint32_t loop_count = 0;		// Control loop counter
-Timer timer;					// Controller timer
+uint32_t loop_count = 0;	// Control loop counter
+Timer timer;				// Controller timer
 
 /**
  * @brief Initializes Balbot.
  */
 void setup()
 {
-	// Initialize Peripherals
+	// Initialize subsystems
 	Bluetooth::init();
 	Imu::init();
-
-	// Initialize Motors
 	MotorL::init();
 	MotorR::init();
 
@@ -67,6 +65,8 @@ void loop()
 		Serial.println("Motor L Angle [rad]: " + String(MotorL::get_angle(), 2));
 		Serial.println("Motor R Angle [rad]: " + String(MotorR::get_angle(), 2));
 		Serial.println("Pitch Angle [rad]: " + String(Imu::get_pitch(), 2));
+		Serial.println("Voltage L [V]: " + String(Controller::get_motor_L_cmd(), 2));
+		Serial.println("Voltage R [V]: " + String(Controller::get_motor_R_cmd(), 2));
 		Serial.println();
 	}
 
