@@ -57,7 +57,7 @@ void MotorR::update()
  */
 void MotorR::set_voltage(float v_cmd)
 {
-	motor.set_voltage(v_cmd);
+	motor.set_voltage(EncoderDir::dir * v_cmd);
 }
 
 /**
