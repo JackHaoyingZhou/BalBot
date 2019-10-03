@@ -10,7 +10,6 @@
 
 // Project Libraries
 #include <BalBot.h>
-#include <PinDefs.h>
 #include <Imu.h>
 #include <MotorL.h>
 #include <MotorR.h>
@@ -32,8 +31,6 @@ void setup()
 	Imu::init();
 
 	// Initialize Motors
-	pinMode(pin_motor_en, OUTPUT);
-	digitalWrite(pin_motor_en, HIGH);
 	MotorL::init();
 	MotorR::init();
 

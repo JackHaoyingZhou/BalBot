@@ -5,7 +5,6 @@
 #include "MotorR.h"
 #include <MotorConfig.h>
 #include <BalBot.h>
-#include <PinDefs.h>
 #include <Imu.h>
 #include <HBridgeMotor.h>
 #include <QuadEncoder.h>
@@ -14,9 +13,17 @@
 
 namespace MotorR
 {
+	// Pin Definitions
+	const uint8_t pin_enable = 8;	// H-bridge enable
+	const uint8_t pin_pwm = 10;		// H-bridge PWM
+	const uint8_t pin_fwd = 12;		// H-bridge forward enable
+	const uint8_t pin_rev = 13;		// H-bridge reverse enable
+	const uint8_t pin_enc_a = 5;	// Encoder channel A
+	const uint8_t pin_enc_b = 4;	// Encoder channel B
+
 	// Hardware Interfaces
-	HBridgeMotor motor(pin_rm_pwm, pin_rm_fwd, pin_rm_rev, Vb);
-	QuadEncoder encoder(pin_renc_a, pin_renc_b, MotorConfig::cnt_per_rev);
+	HBridgeMotor motor(pin_pwm, pin_fwd, pin_rev, Vb);
+	QuadEncoder encoder(pin_enc_a, pin_enc_b, MotorConfig::cnt_per_rev);
 
 	// Digital Filters
 	DiscreteFilter angle_diff = DiscreteFilter::make_dif(f_ctrl);
@@ -36,11 +43,13 @@ namespace MotorR
  */
 void MotorR::init()
 {
+	pinMode(pin_enable, OUTPUT);
+	digitalWrite(pin_enable, HIGH);
 	motor.init();
 	motor.enable();
 	encoder.init();
-	attachPinChangeInterrupt(pin_renc_a, isr_A, CHANGE);
-	attachPinChangeInterrupt(pin_renc_b, isr_B, CHANGE);
+	attachPinChangeInterrupt(pin_enc_a, isr_A, CHANGE);
+	attachPinChangeInterrupt(pin_enc_b, isr_B, CHANGE);
 }
 
 /**
