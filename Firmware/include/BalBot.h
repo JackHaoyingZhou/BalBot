@@ -61,6 +61,3 @@ const float encoder_cpr = 1320.0f;
 #else
 const float encoder_cpr = 2480.0f;
 #endif
-
-// Serial Baud Rate [bit/s]
-const uint32_t serial_baud = 57600;
