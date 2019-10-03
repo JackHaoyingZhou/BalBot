@@ -52,8 +52,8 @@ void Imu::update()
 	}
 	else
 	{
-		const Gaussian pitch_gyr = pitch + pitch_vel * t_ctrl;	// Gyro pitch estimate [rad]
-		pitch = fuse(pitch_gyr, pitch_acc);						// Fused pitch estimate [rad]
+		const Gaussian pitch_gyr = pitch + pitch_vel * BalBot::t_ctrl;	// Gyro pitch estimate [rad]
+		pitch = fuse(pitch_gyr, pitch_acc);								// Fused pitch estimate [rad]
 	}
 
 	// Yaw velocity estimation

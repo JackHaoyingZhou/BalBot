@@ -11,12 +11,54 @@
 #include <CppUtil.h>
 #include <Pid.h>
 #include <SlewLimiter.h>
+#include <Arduino.h>
 
 namespace Controller
 {
+	// Robot Physical Constants
+	const float Ix = 0.00215f;	// Pitch inertia [kg*m^2]
+	const float Iz = 0.00110f;	// Yaw inertia [kg*m^2]
+	const float m = 0.955f;		// Robot mass [kg]
+	const float g = 9.81f;		// Gravity [m/s^2]
+	const float dg = 0.062f;	// CG height [m]
+	const float dw = 0.085f;	// Wheel to CG Z-axis [m]
+	const float dr = 0.034;		// Wheel radius [m]
+	const float R = 5.4f;		// Motor resistance [Ohm]
+	const float Kv = 0.34f;		// Back-EMF constant [V/(rad/s)]
+	const float Kt = 0.20f;		// Torque constant [N*m/A]
+	const float Vb = 12.0f;		// Battery voltage [V]
+
+	// Derived Physical Constants
+	const float Mx = Ix*dr/dg;	// Generalized X-mass [kg*m^2]
+	const float My = m*dr;		// Generalized Y-mass [kg*m]
+	const float Mz = Iz*dr/dw;	// Generalized Z-mass [kg*m^2]
+	const float Tg = m*g*dr;	// Gravitational torque [N*m]
+	const float Gt = 2.0f*Kt/R;	// Torque-voltage gain [N*m/V]
+	const float Gv = Kv/dr;		// Linear back-EMF [V/(m/s)]
+	const float Gw = Kv*dw/dr;	// Yaw back-EMF [V/(rad/s)]
+
+	// Controller Constants
+	const float pitch_max = 0.5f;	// Max pitch angle [rad]
+	const float yaw_max = 1.6f;		// Yaw velocity limit [rad/s]
+	const float vel_max = 0.8f;		// Velocity limit [m/s]
+	const float acc_max = 0.8f;		// Acceleration limit [m/s^2]
+	const float px = 20.0f;			// Pitch-velocity pole [1/s]
+	const float pz = 80.0f;			// Yaw velocity pole [1/s]
+	const float dr_div_2 = dr/2.0f;	// Half wheel radius [m]
+
+	// Pitch-Velocity State-Space Gains
+	const float ss_K1 = Mx*Mx/(Gt*Tg)*px*px*px + 3.0f*Mx/Gt*px;
+	const float ss_K2 = 3.0f*Mx/Gt*px*px + Tg/Gt;
+	const float ss_K3 = -Mx*My/(Gt*Tg)*px*px*px - Gv;
+
+	// Yaw Velocity PI-Controller Gains
+	const float yaw_Kp = 0.0f;
+	const float yaw_Ki = 5.0f;
+	const float yaw_Kd = 0.0f;
+
 	// Controllers
-	Pid yaw_pid(yaw_Kp, yaw_Ki, yaw_Kd, -Vb, Vb, f_ctrl);
-	SlewLimiter vel_slew(acc_max, f_ctrl);
+	Pid yaw_pid(yaw_Kp, yaw_Ki, yaw_Kd, -Vb, Vb, BalBot::f_ctrl);
+	SlewLimiter vel_slew(acc_max, BalBot::f_ctrl);
 
 	// State Variables
 	float lin_vel = 0.0f;	// Linear velocity [m/s]

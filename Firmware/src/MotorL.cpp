@@ -21,11 +21,11 @@ namespace MotorL
 	const uint8_t pin_enc_b = 3;	// Encoder channel B
 
 	// Hardware Interfaces
-	HBridgeMotor motor(pin_pwm, pin_fwd, pin_rev, Vb);
+	HBridgeMotor motor(pin_pwm, pin_fwd, pin_rev, BalBot::v_bus);
 	QuadEncoder encoder(pin_enc_a, pin_enc_b, MotorConfig::cnt_per_rev);
 
 	// Digital Filters
-	DiscreteFilter angle_diff = DiscreteFilter::make_dif(f_ctrl);
+	DiscreteFilter angle_diff = DiscreteFilter::make_dif(BalBot::f_ctrl);
 
 	// State Variables
 	float angle;		// Encoder angle [rad]

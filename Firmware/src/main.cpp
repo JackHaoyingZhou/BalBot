@@ -90,5 +90,5 @@ void loop()
 
 	// Maintain loop timing
 	loop_count++;
-	timer.wait_until(t_ctrl);
+	timer.wait_until(BalBot::t_ctrl);
 }
