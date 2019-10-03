@@ -1,6 +1,6 @@
 /**
  * @file MotorConfig.h
- * @brief Namespace for robot-specific motor configurations.
+ * @brief Namespace for robot-specific motor configuration constants.
  * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once

@@ -2,11 +2,11 @@
  * @file Imu.cpp
  * @author Dan Oates (WPI Class of 2020)
  */
-#include "Imu.h"
+#include <Imu.h>
 #include <ImuConfig.h>
 #include <BalBot.h>
-#include <Gaussian.h>
 #include <Mpu6050.h>
+#include <Gaussian.h>
 
 namespace Imu
 {

@@ -1,6 +1,6 @@
 /**
  * @file MotorR.h
- * @brief Namespace for BalBot right drive motor.
+ * @brief Right drive motor subsystem.
  * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once

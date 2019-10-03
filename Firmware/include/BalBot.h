@@ -1,6 +1,6 @@
 /**
  * @file BalBot.h
- * @brief Contains universal BalBot constants.
+ * @brief Namespace for universal BalBot constants.
  */
 #pragma once
 

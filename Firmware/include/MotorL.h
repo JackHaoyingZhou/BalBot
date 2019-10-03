@@ -1,6 +1,6 @@
 /**
  * @file MotorL.h
- * @brief Namespace for BalBot left drive motor.
+ * @brief Left drive motor subsystem.
  * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once

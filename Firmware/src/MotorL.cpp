@@ -2,7 +2,7 @@
  * @file MotorL.cpp
  * @author Dan Oates (WPI Class of 2020)
  */
-#include "MotorL.h"
+#include <MotorL.h>
 #include <MotorConfig.h>
 #include <BalBot.h>
 #include <Imu.h>

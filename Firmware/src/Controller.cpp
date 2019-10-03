@@ -1,8 +1,8 @@
 /**
  * @file Controller.cpp
- * @author Dan Oates (WPI Class of 2020).
+ * @author Dan Oates (WPI Class of 2020)
  */
-#include "Controller.h"
+#include <Controller.h>
 #include <BalBot.h>
 #include <Bluetooth.h>
 #include <MotorL.h>

@@ -1,6 +1,6 @@
 /**
  * @file Imu.h
- * @brief Namespace for BalBot IMU interface.
+ * @brief IMU-based state estimation subsystem.
  * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once

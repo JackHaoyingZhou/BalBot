@@ -1,6 +1,6 @@
 /**
  * @file Bluetooth.h
- * @brief Namespace for BalBot bluetooth communication,
+ * @brief Bluetooth communication subsystem.
  * @author Dan Oates (WPI Class of 2020)
  */
 

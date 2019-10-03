@@ -10,10 +10,10 @@
 
 // Project Libraries
 #include <BalBot.h>
+#include <Bluetooth.h>
 #include <Imu.h>
 #include <MotorL.h>
 #include <MotorR.h>
-#include <Bluetooth.h>
 #include <Controller.h>
 
 // Global Variables

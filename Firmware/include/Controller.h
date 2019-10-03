@@ -1,7 +1,7 @@
 /**
  * @file Controller.h
- * @brief Pitch and velocity control system for BalBot.
- * @author Dan Oates (WPI Class of 2020).
+ * @brief Balance and velocity control subsystem.
+ * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once
 

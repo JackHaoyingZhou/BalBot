@@ -2,7 +2,7 @@
  * @file Bluetooth.cpp
  * @author Dan Oates (WPI Class of 2020)
  */
-#include "Bluetooth.h"
+#include <Bluetooth.h>
 #include <BalBot.h>
 #include <Controller.h>
 #include <Imu.h>
