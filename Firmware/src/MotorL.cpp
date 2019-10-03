@@ -3,10 +3,10 @@
  * @author Dan Oates (WPI Class of 2020)
  */
 #include "MotorL.h"
+#include <MotorConfig.h>
 #include <BalBot.h>
 #include <PinDefs.h>
 #include <Imu.h>
-#include <EncoderDir.h>
 #include <HBridgeMotor.h>
 #include <QuadEncoder.h>
 #include <DiscreteFilter.h>
@@ -15,7 +15,7 @@ namespace MotorL
 {
 	// Hardware Interfaces
 	HBridgeMotor motor(pin_lm_pwm, pin_lm_fwd, pin_lm_rev, Vb);
-	QuadEncoder encoder(pin_lenc_a, pin_lenc_b, encoder_cpr);
+	QuadEncoder encoder(pin_lenc_a, pin_lenc_b, MotorConfig::cnt_per_rev);
 
 	// Digital Filters
 	DiscreteFilter angle_diff = DiscreteFilter::make_dif(f_ctrl);
@@ -47,7 +47,7 @@ void MotorL::init()
  */
 void MotorL::update()
 {
-	angle = EncoderDir::dir * encoder.read() - Imu::get_pitch();
+	angle = MotorConfig::direction * encoder.read() - Imu::get_pitch();
 	velocity = angle_diff.update(angle);
 }
 
@@ -56,7 +56,7 @@ void MotorL::update()
  */
 void MotorL::set_voltage(float v_cmd)
 {
-	motor.set_voltage(EncoderDir::dir * v_cmd);
+	motor.set_voltage(MotorConfig::direction * v_cmd);
 }
 
 /**
