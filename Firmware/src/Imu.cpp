@@ -96,6 +96,6 @@ void Imu::calibrate()
 	Serial.println("Gyro x: " + String(imu.get_vel_x_cal(), 20) + " [rad/s]");
 	Serial.println("Gyro y: " + String(imu.get_vel_y_cal(), 20) + " [rad/s]");
 	Serial.println("Gyro z: " + String(imu.get_vel_z_cal(), 20) + " [rad/s]");
-	Serial.println("Acc Var: " + String(imu.get_acc_variance(), 20) + " [(m/s^2)^2]");
 	Serial.println("Vel Var: " + String(imu.get_vel_variance(), 20) + " [(rad/s)^2]");
+	Serial.println("Acc Var: " + String(imu.get_acc_variance(), 20) + " [(m/s^2)^2]");
 }
