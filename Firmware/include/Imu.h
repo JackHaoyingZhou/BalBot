@@ -3,6 +3,7 @@
  * @brief Namespace for BalBot IMU interface.
  * @author Dan Oates (WPI Class of 2020)
  */
+#pragma once
 
 namespace Imu
 {
