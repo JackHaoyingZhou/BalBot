@@ -17,7 +17,6 @@
 #include <Controller.h>
 
 // Global Variables
-const uint32_t baud = 115200;	// Serial baud [bit/s]
 uint32_t loop_count = 0;		// Control loop counter
 Timer timer;					// Controller timer
 
