@@ -1,5 +1,5 @@
 classdef BalBot < handle
-    %BALBOT Class for interfacing with self-balancing robot.
+    %BALBOT Bluetooth interface for self-balancing robot.
     %   Created by Dan Oates (WPI Class of 2020)
 
     properties (Access = private)
@@ -11,8 +11,10 @@ classdef BalBot < handle
     
     methods
         function obj = BalBot(device_name, vel_max, yaw_max)
-            %BALBOT Construct an instance of this class.
-            %   Detailed explanation goes here
+            %BALBOT Construct robot interface.
+            %   device_name = Bluetooth name (ex. 'ES3011_BOT01')
+            %   vel_max = Max linear velocity command [m/s]
+            %   yaw_max = Max yaw velocity command [rad/s]
             obj.device_name = device_name;
             obj.vel_cmd_max = vel_max;
             obj.yaw_cmd_max = yaw_max;
@@ -39,24 +41,24 @@ classdef BalBot < handle
             %DISCONNECT Disconnects from bluetooth.
             obj.serial_comms.close();
         end
-        function set_cmd_limits(obj, vel_max, yaw_max)
-            %SET_CMD_LIMITS Sets linear and yaw velocity limits.
-            obj.vel_cmd_max = vel_max;
-            obj.yaw_cmd_max = yaw_max;
-        end
-        function status = send_cmds(obj, vel, yaw)
-            %SEND_CMDS Sends linear and yaw velocity commands and returns
-            %robot status struct.
+        function state = send_cmds(obj, vel, yaw)
+            %SEND_CMDS Sends commands and returns state struct.
+            %   vel = Linear velocity command [m/s]
+            %   yaw = Yaw velocity command [rad/s]
+            %   state.lin_vel = Robot linear velocity [m/s]
+            %   state.yaw_vel = Robot yaw velocity [rad/s]
+            %   state.volts_L = Left motor voltage [V]
+            %   state.volts_R = Right motor voltage [V]
             vel = clamp_limit(vel, -obj.vel_cmd_max, obj.vel_cmd_max);
             yaw = clamp_limit(yaw, -obj.yaw_cmd_max, obj.yaw_cmd_max);
             obj.serial_comms.write_float(vel);
             obj.serial_comms.write_float(yaw);
-            status = struct();
+            state = struct();
             if obj.serial_comms.wait(16, 1)
-                status.lin_vel = obj.serial_comms.read_float();
-                status.yaw_vel = obj.serial_comms.read_float();
-                status.volts_L = obj.serial_comms.read_float();
-                status.volts_R = obj.serial_comms.read_float();
+                state.lin_vel = obj.serial_comms.read_float();
+                state.yaw_vel = obj.serial_comms.read_float();
+                state.volts_L = obj.serial_comms.read_float();
+                state.volts_R = obj.serial_comms.read_float();
             else
                 error('Communication timeout.')
             end
