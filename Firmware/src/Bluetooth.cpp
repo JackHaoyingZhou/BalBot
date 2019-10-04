@@ -12,7 +12,7 @@ namespace Bluetooth
 {
 	// Hardware interfaces
 	SerialC comms(Serial);
-	const uint32_t baud = 115200;
+	const uint32_t baud = 57600;
 
 	// Received commands
 	float vel_cmd = 0.0f;	// Linear velocity [m/s]
