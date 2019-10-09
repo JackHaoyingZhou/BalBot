@@ -13,17 +13,17 @@ namespace ImuConfig
 	const float vel_var = 0.0000035204512f;
 	const float acc_var = 0.0012492317000f;
 #elif ES3011_BOT_ID == 1
-	const float vel_x_cal = +0.0332801940f;
-	const float vel_y_cal = +0.0021518338f;
-	const float vel_z_cal = -0.0119056640f;
-	const float vel_var = 0.0000057464463f;
-	const float acc_var = 0.0005833894200f;
-#elif ES3011_BOT_ID == 2
 	const float vel_x_cal = -0.0138670760f;
 	const float vel_y_cal = -0.0743288400f;
 	const float vel_z_cal = -0.0213452480f;
 	const float vel_var = 0.0000040159848f;
 	const float acc_var = 0.0010868423000f;
+#elif ES3011_BOT_ID == 2
+	const float vel_x_cal = +0.0332801940f;
+	const float vel_y_cal = +0.0021518338f;
+	const float vel_z_cal = -0.0119056640f;
+	const float vel_var = 0.0000057464463f;
+	const float acc_var = 0.0005833894200f;
 #elif ES3011_BOT_ID == 3
 	const float vel_x_cal = +0.0f;
 	const float vel_y_cal = +0.0f;

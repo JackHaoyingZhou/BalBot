@@ -10,11 +10,11 @@ namespace MotorConfig
 	const float direction = +1.0f;
 	const float cnt_per_rev = 1320.0f;
 #elif ES3011_BOT_ID == 1
-	const float direction = -1.0f;
-	const float cnt_per_rev = 2480.0f;
-#elif ES3011_BOT_ID == 2
 	const float direction = +1.0f;
 	const float cnt_per_rev = 1320.0f;
+#elif ES3011_BOT_ID == 2
+	const float direction = -1.0f;
+	const float cnt_per_rev = 2480.0f;
 #elif ES3011_BOT_ID == 3
 	const float direction = +1.0f;
 	const float cnt_per_rev = 1320.0f;
