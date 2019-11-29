@@ -1,9 +1,13 @@
 /**
  * @file Bluetooth.h
- * @brief Bluetooth communication subsystem.
+ * @brief Subsystem for Bluetooth communication
  * @author Dan Oates (WPI Class of 2020)
  */
+#pragma once
 
+/**
+ * Namespace Declaration
+ */
 namespace Bluetooth
 {
 	void init();

@@ -1,10 +1,13 @@
 /**
  * @file Imu.h
- * @brief IMU-based state estimation subsystem.
+ * @brief Subsystem for IMU-based state estimation
  * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once
 
+/**
+ * Namespace Declaration
+ */
 namespace Imu
 {
 	void init();

@@ -3,49 +3,64 @@
  * @author Dan Oates (WPI Class of 2020)
  */
 #include <Bluetooth.h>
-#include <BalBot.h>
-#include <Controller.h>
 #include <Imu.h>
-#include <SerialC.h>
+#include <Controller.h>
+#include <SerialStruct.h>
 
+/**
+ * Namespace Definitions
+ */
 namespace Bluetooth
 {
 	// Hardware interfaces
-	SerialC comms(Serial);
+	SerialStruct serial(&Serial);
 	const uint32_t baud = 57600;
 
 	// Received commands
 	float vel_cmd = 0.0f;	// Linear velocity [m/s]
 	float yaw_cmd = 0.0f;	// Yaw velocity [rad/s]
+
+	// Init flag
+	bool init_complete = false;
 }
 
 /**
- * @brief Initializes Bluetooth module and serial.
+ * @brief Initializes Bluetooth module and serial
  */
 void Bluetooth::init()
 {
-	comms.init(baud);
-	comms.flush();
-}
-
-/**
- * @brief Checks Bluetooth serial buffer for commands.
- */
-void Bluetooth::update()
-{
-	if(comms.available() >= 8)
+	if (!init_complete)
 	{
-		vel_cmd = comms.read_float();
-		yaw_cmd = comms.read_float();
-		comms.write_float(Controller::get_lin_vel());
-		comms.write_float(Imu::get_yaw_vel());
-		comms.write_float(Controller::get_motor_L_cmd());
-		comms.write_float(Controller::get_motor_R_cmd());
+		// Init dependent subsystems
+		Imu::init();
+
+		// Init serial
+		Serial.begin(baud);
+		serial.flush();
+
+		// Set init flag
+		init_complete = true;
 	}
 }
 
 /**
- * @brief Returns linear velocity command [m/s].
+ * @brief Checks Bluetooth serial buffer for commands
+ */
+void Bluetooth::update()
+{
+	if(Serial.available() >= 8)
+	{
+		serial.rx(vel_cmd);
+		serial.rx(yaw_cmd);
+		serial.tx(Controller::get_lin_vel());
+		serial.tx(Imu::get_yaw_vel());
+		serial.tx(Controller::get_motor_L_cmd());
+		serial.tx(Controller::get_motor_R_cmd());
+	}
+}
+
+/**
+ * @brief Returns linear velocity command [m/s]
  */
 float Bluetooth::get_vel_cmd()
 {
@@ -53,7 +68,7 @@ float Bluetooth::get_vel_cmd()
 }
 
 /**
- * @brief Returns yaw velocity command [rad/s].
+ * @brief Returns yaw velocity command [rad/s]
  */
 float Bluetooth::get_yaw_cmd()
 {

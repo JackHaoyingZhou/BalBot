@@ -1,10 +1,13 @@
 /**
  * @file MotorConfig.h
- * @brief Namespace for robot-specific motor configuration constants.
+ * @brief Namespace for motor constants
  * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once
 
+/**
+ * Namespace Declaration
+ */
 namespace MotorConfig
 {
 	const extern float Vb;			// Battery voltage [V]

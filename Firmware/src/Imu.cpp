@@ -4,82 +4,112 @@
  */
 #include <Imu.h>
 #include <ImuConfig.h>
-#include <BalBot.h>
-#include <Mpu6050.h>
-#include <Gaussian.h>
+#include <MPU6050.h>
+#include <Controller.h>
+#include <DigitalOut.h>
+#include <GRV.h>
+using Controller::t_ctrl;
 
 namespace Imu
 {
 	// IMU Hardware Interface
-	Mpu6050 imu;
+	TwoWire* const wire = &Wire;
+	MPU6050 imu(wire);
 
 	// State Variables
 	bool first_frame = true;
-	Gaussian pitch;
-	Gaussian pitch_vel;
+	GRV pitch, pitch_vel;
 	float yaw_vel;
+
+	// Error LED
+	const uint8_t pin_led = 13;
+	DigitalOut led(pin_led);
+
+	// Init Flag
+	bool init_complete = false;
 }
 
 /**
- * @brief Initializes and calibrates IMU.
+ * @brief Initializes I2C and IMU
  */
 void Imu::init()
 {
-	imu.init();
-	imu.set_gyro_cals(
-		ImuConfig::vel_x_cal,
-		ImuConfig::vel_y_cal,
-		ImuConfig::vel_z_cal);
+	if (!init_complete)
+	{
+		// Init I2CC
+		wire->begin();
+		// TODO increase clock rate?
+
+		// Init IMU
+		bool success = imu.init();
+		led = !success;
+		if (!success) while(1);
+		imu.gyr_x_cal = ImuConfig::gyr_x_cal;
+		imu.gyr_y_cal = ImuConfig::gyr_y_cal;
+		imu.gyr_z_cal = ImuConfig::gyr_z_cal;
+
+		// Set init flag
+		init_complete = true;
+	}
 }
 
 /**
- * @brief Reads IMU and updates state estimates.
+ * @brief Reads IMU and updates state estimates
  */
 void Imu::update()
 {
 	// Get new readings from IMU
 	imu.update();
+	const float acc_y = imu.get_acc_y();
+	const float acc_z = imu.get_acc_z();
+	const float gyr_x = imu.get_gyr_x();
+	const float gyr_y = imu.get_gyr_y();
+	const float gyr_z = imu.get_gyr_z();
 
-	// Pitch estimation Kalman Filter
-	const Gaussian acc_y(imu.get_acc_y(), ImuConfig::acc_var);	// Y-acceleration [m/s^2]
-	const Gaussian acc_z(imu.get_acc_z(), ImuConfig::acc_var);	// Z-acceleration [m/s^2]
-	const Gaussian pitch_acc = atan2(acc_y, acc_z);				// Accelerometer pitch estimate [rad]
-	pitch_vel = Gaussian(imu.get_vel_x(), ImuConfig::vel_var);	// Gyro pitch velocity [rad/s]
+	// Estimate pitch from accelerometer
+	GRV grv_acc_y(acc_y, ImuConfig::acc_y_var);
+	GRV grv_acc_z(acc_z, ImuConfig::acc_z_var);
+	GRV pitch_acc = atan2(grv_acc_y, grv_acc_z);
+
+	// Check special first frame condition
 	if(first_frame)
 	{
-		first_frame = false;	// Reset first frame flag
-		pitch = pitch_acc;		// Ignore gyro on first frame
+		// Use accelerometer only
+		first_frame = false;
+		pitch = pitch_acc;
 	}
 	else
 	{
-		const Gaussian pitch_gyr = pitch + pitch_vel * BalBot::t_ctrl;	// Gyro pitch estimate [rad]
-		pitch = fuse(pitch_gyr, pitch_acc);								// Fused pitch estimate [rad]
+		// Fuse accelerometer and gyro integration
+		pitch_vel = GRV(gyr_x, ImuConfig::gyr_x_var);
+		GRV pitch_gyr = pitch + pitch_vel * t_ctrl;
+		pitch = fuse(pitch_gyr, pitch_acc);
 	}
 
 	// Yaw velocity estimation
 	yaw_vel =
-		imu.get_vel_z() * cosf(pitch.get_mean()) +
-		imu.get_vel_y() * sinf(pitch.get_mean());
+		gyr_z * cosf(pitch.mean) +
+		gyr_y * sinf(pitch.mean);
 }
 
 /**
- * @brief Returns IMU pitch estimate computed via Kalman filter.
+ * @brief Returns IMU pitch estimate computed via Kalman filter
  */
 float Imu::get_pitch()
 {
-	return pitch.get_mean();
+	return pitch.mean;
 }
 
 /**
- * @brief Returns IMU pitch velocity measurement.
+ * @brief Returns IMU pitch velocity measurement
  */
 float Imu::get_pitch_vel()
 {
-	return pitch_vel.get_mean();
+	return pitch_vel.mean;
 }
 
 /**
- * @brief Returns IMU yaw velocity estimate.
+ * @brief Returns IMU yaw velocity estimate
  */
 float Imu::get_yaw_vel()
 {
@@ -87,15 +117,19 @@ float Imu::get_yaw_vel()
 }
 
 /**
- * @brief Calibrates IMU and prints values to Serial.
+ * @brief Calibrates IMU and prints values to Serial
  */
 void Imu::calibrate()
 {
 	imu.calibrate();
 	Serial.println("IMU Calibration Code:");
-	Serial.println("Gyro x: " + String(imu.get_vel_x_cal(), 20) + " [rad/s]");
-	Serial.println("Gyro y: " + String(imu.get_vel_y_cal(), 20) + " [rad/s]");
-	Serial.println("Gyro z: " + String(imu.get_vel_z_cal(), 20) + " [rad/s]");
-	Serial.println("Vel Var: " + String(imu.get_vel_variance(), 20) + " [(rad/s)^2]");
-	Serial.println("Acc Var: " + String(imu.get_acc_variance(), 20) + " [(m/s^2)^2]");
+	Serial.println("const float gyr_x_cal = " + String(imu.gyr_x_cal, 13) + "f;");
+	Serial.println("const float gyr_y_cal = " + String(imu.gyr_y_cal, 13) + "f;");
+	Serial.println("const float gyr_z_cal = " + String(imu.gyr_z_cal, 13) + "f;");
+	Serial.println("const float gyr_x_var = " + String(imu.get_gyr_x_var(), 14) + "f;");
+	Serial.println("const float gyr_y_var = " + String(imu.get_gyr_y_var(), 14) + "f;");
+	Serial.println("const float gyr_z_var = " + String(imu.get_gyr_z_var(), 14) + "f;");
+	Serial.println("const float acc_x_var = " + String(imu.get_acc_x_var(), 14) + "f;");
+	Serial.println("const float acc_y_var = " + String(imu.get_acc_y_var(), 14) + "f;");
+	Serial.println("const float acc_z_var = " + String(imu.get_acc_z_var(), 14) + "f;");
 }

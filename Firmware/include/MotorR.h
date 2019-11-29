@@ -1,10 +1,13 @@
 /**
  * @file MotorR.h
- * @brief Right drive motor subsystem.
+ * @brief Subsystem for right drive motor
  * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once
 
+/**
+ * Namespace Declaration
+ */
 namespace MotorR
 {
 	void init();

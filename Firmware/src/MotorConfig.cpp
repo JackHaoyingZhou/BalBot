@@ -4,6 +4,9 @@
  */
 #include <MotorConfig.h>
 
+/**
+ * Namespace Definitions
+ */
 namespace MotorConfig
 {
 	// Universal Constants
@@ -25,7 +28,7 @@ namespace MotorConfig
 		const float direction = -1.0f;
 		const float tr = +56.0f;
 	#elif ES3011_BOT_ID == 3
-		const float direction = +1.0f;
+		const float direction = -1.0f;
 		const float tr = +56.0f;
 	#else
 	#error Must define ES3011_BOT_ID in range [0, 20]

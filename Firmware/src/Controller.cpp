@@ -3,23 +3,29 @@
  * @author Dan Oates (WPI Class of 2020)
  */
 #include <Controller.h>
-#include <BalBot.h>
 #include <MotorConfig.h>
 #include <Bluetooth.h>
+#include <Imu.h>
 #include <MotorL.h>
 #include <MotorR.h>
-#include <Imu.h>
 #include <CppUtil.h>
-#include <Pid.h>
 #include <SlewLimiter.h>
-#include <Arduino.h>
+#include <PID.h>
 using MotorConfig::Vb;
 using MotorConfig::Kv;
 using MotorConfig::Kt;
 using MotorConfig::R;
+using CppUtil::clamp;
 
+/**
+ * Namespace Definitions
+ */
 namespace Controller
 {
+	// External Constants
+	const float f_ctrl = 100.0f;
+	const float t_ctrl = 1.0f / f_ctrl;
+
 	// Robot Physical Constants
 	const float Ix = 0.00215f;	// Pitch inertia [kg*m^2]
 	const float Iz = 0.00110f;	// Yaw inertia [kg*m^2]
@@ -58,8 +64,8 @@ namespace Controller
 	const float yaw_Kd = 0.0f;
 
 	// Controllers
-	Pid yaw_pid(yaw_Kp, yaw_Ki, yaw_Kd, -Vb, Vb, BalBot::f_ctrl);
-	SlewLimiter vel_slew(acc_max, BalBot::f_ctrl);
+	PID yaw_pid(yaw_Kp, yaw_Ki, yaw_Kd, -Vb, Vb, f_ctrl);
+	SlewLimiter vel_slew(acc_max, f_ctrl);
 
 	// State Variables
 	float lin_vel = 0.0f;	// Linear velocity [m/s]
@@ -67,17 +73,38 @@ namespace Controller
 	float yaw_cmd = 0.0f;	// Yaw velocity cmd [rad/s]
 	float v_cmd_L = 0.0f;	// Left motor voltage cmd [V]
 	float v_cmd_R = 0.0f;	// Right motor voltage cmd [V]
+
+	// Init Flag
+	bool init_complete = false;
 }
 
 /**
- * @brief Runs one control loop.
+ * @brief Initializes controller subsystems
+ */
+void Controller::init()
+{
+	if (!init_complete)
+	{
+		// Init dependent subsystems
+		Bluetooth::init();
+		Imu::init();
+		MotorL::init();
+		MotorR::init();
+
+		// Set init flag
+		init_complete = true;
+	}
+}
+
+/**
+ * @brief Runs one control loop iteration
  */
 void Controller::update()
 {
 	// Process teleop commands
 	vel_cmd = vel_slew.update(Bluetooth::get_vel_cmd());
-	vel_cmd = clamp_limit(vel_cmd, -vel_max, vel_max);
-	yaw_cmd = clamp_limit(Bluetooth::get_yaw_cmd(), -yaw_max, yaw_max);
+	vel_cmd = clamp(vel_cmd, -vel_max, vel_max);
+	yaw_cmd = clamp(Bluetooth::get_yaw_cmd(), -yaw_max, yaw_max);
 
 	// Estimate state variables
 	lin_vel = dr_div_2 * (MotorL::get_velocity() + MotorR::get_velocity());
@@ -88,7 +115,7 @@ void Controller::update()
 		+ ss_K1 * (0.0f - Imu::get_pitch_vel())
 		+ ss_K2 * (0.0f - Imu::get_pitch())
 		+ ss_K3 * (vel_cmd - lin_vel);
-	v_avg = clamp_limit(v_avg, -Vb, Vb);
+	v_avg = clamp(v_avg, -Vb, Vb);
 
 	// Yaw velocity control
 	const float yaw_ff = Gw * yaw_cmd;
@@ -96,8 +123,8 @@ void Controller::update()
 	const float v_diff = yaw_pid.update(yaw_error, yaw_ff);
 
 	// Motor voltage commands
-	v_cmd_L = clamp_limit(v_avg - v_diff, -Vb, Vb);
-	v_cmd_R = clamp_limit(v_avg + v_diff, -Vb, Vb);
+	v_cmd_L = clamp(v_avg - v_diff, -Vb, Vb);
+	v_cmd_R = clamp(v_avg + v_diff, -Vb, Vb);
 
 	// Disable motors if tipped over
 	if(fabsf(Imu::get_pitch()) > pitch_max)
@@ -109,7 +136,7 @@ void Controller::update()
 }
 
 /**
- * @brief Returns linear velocity estimate [m/s].
+ * @brief Returns linear velocity estimate [m/s]
  */
 float Controller::get_lin_vel()
 {
@@ -117,7 +144,7 @@ float Controller::get_lin_vel()
 }
 
 /**
- * @brief Returns left motor voltage command [V].
+ * @brief Returns left motor voltage command [V]
  */
 float Controller::get_motor_L_cmd()
 {
@@ -125,7 +152,7 @@ float Controller::get_motor_L_cmd()
 }
 
 /**
- * @brief Returns right motor voltage command [V].
+ * @brief Returns right motor voltage command [V]
  */
 float Controller::get_motor_R_cmd()
 {

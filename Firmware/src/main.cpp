@@ -9,12 +9,14 @@
 #include <Timer.h>
 
 // Project Libraries
-#include <BalBot.h>
 #include <Bluetooth.h>
 #include <Imu.h>
 #include <MotorL.h>
 #include <MotorR.h>
+#include <MotorConfig.h>
 #include <Controller.h>
+using MotorConfig::Vb;
+using Controller::t_ctrl;
 
 // Global Variables
 uint32_t loop_count = 0;	// Control loop counter
@@ -30,6 +32,7 @@ void setup()
 	Imu::init();
 	MotorL::init();
 	MotorR::init();
+	Controller::init();
 
 #if defined(CALIBRATE_IMU)
 
@@ -38,6 +41,9 @@ void setup()
 	while(1);
 
 #endif
+
+	// Start loop timing
+	timer.start();
 }
 
 /**
@@ -45,8 +51,8 @@ void setup()
  */
 void loop()
 {
-	// Start timing
-	timer.tic();
+	// Reset loop timer
+	timer.reset();
 
 	// Update subsystems
 	Bluetooth::update();
@@ -73,8 +79,8 @@ void loop()
 #elif defined(MOTOR_SPEED_TEST)
 
 	// Send max motor voltages and print velocities
-	MotorL::set_voltage(BalBot::v_bus);
-	MotorR::set_voltage(BalBot::v_bus);
+	MotorL::set_voltage(MotorConfig::Vb);
+	MotorR::set_voltage(MotorConfig::Vb);
 	if (loop_count % 25 == 0)
 	{
 		Serial.println("Velocities [rad/s]:");
@@ -86,7 +92,7 @@ void loop()
 #elif defined(GET_MAX_CTRL_FREQ)
 
 	// Estimate maximum possible control frequency
-	const float f_ctrl_max = 1.0f / timer.toc();
+	const float f_ctrl_max = 1.0f / timer.read();
 	MotorL::set_voltage(0.0f);
 	MotorR::set_voltage(0.0f);
 	Serial.println("GET_MAX_CTRL_FREQ");
@@ -103,5 +109,5 @@ void loop()
 
 	// Maintain loop timing
 	loop_count++;
-	timer.wait_until(BalBot::t_ctrl);
+	while (timer.read() < t_ctrl);
 }

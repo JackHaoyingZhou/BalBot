@@ -1,10 +1,13 @@
 /**
  * @file MotorL.h
- * @brief Left drive motor subsystem.
+ * @brief Subsystem for left drive motor
  * @author Dan Oates (WPI Class of 2020)
  */
 #pragma once
 
+/**
+ * Namespace Declaration
+ */
 namespace MotorL
 {
 	void init();
