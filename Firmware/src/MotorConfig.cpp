@@ -6,70 +6,35 @@
 
 namespace MotorConfig
 {
-#if ES3011_BOT_ID == 0
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 1
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 2
-	const float direction = -1.0f;
-	const float cnt_per_rev = 2480.0f;
-#elif ES3011_BOT_ID == 3
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 4
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 5
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 6
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 7
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 8
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 9
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 10
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 11
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 12
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 13
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 14
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 15
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 16
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 17
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 18
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 19
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#elif ES3011_BOT_ID == 20
-	const float direction = +1.0f;
-	const float cnt_per_rev = 1320.0f;
-#else
-#error Must define ES3011_BOT_ID in range [0, 20]
-#endif
+	// Universal Constants
+	const float Vb = 12.0f;		// Battery voltage [V]
+	const float i_ST = 1.0f;	// Stall current [A]
+	const float i_NL = 0.12f;	// No-load current [A]
+	const float R = 5.4f;		// Resistance [Ohm]
+
+	// Robot-Specific Constants
+	// direction = Motor direction [+1, -1]
+	// tr = Torque ratio [(N*m)/(N*m)]
+	#if ES3011_BOT_ID == 0
+		const float direction = +1.0f;
+		const float tr = +30.0f;
+	#elif ES3011_BOT_ID == 1
+		const float direction = +1.0f;
+		const float tr = +30.0f;
+	#elif ES3011_BOT_ID == 2
+		const float direction = -1.0f;
+		const float tr = +56.0f;
+	#elif ES3011_BOT_ID == 3
+		const float direction = +1.0f;
+		const float tr = +56.0f;
+	#else
+	#error Must define ES3011_BOT_ID in range [0, 20]
+	#endif
+
+	// Derived Constants
+	const float w_NL = 1047.0f / tr;			// No-load speed [rad/s]
+	const float t_ST = 0.015f * tr;				// Stall torque [N*m]
+	const float Kv = (Vb - R * i_NL) / w_NL;	// Voltage constant [V/(rad/s)]
+	const float Kt = t_ST * R / Vb;				// Torque constant [N*m/A]
+	const float enc_cpr = 44.0 * tr;			// Encoder resolution [cnt/rev]
 }

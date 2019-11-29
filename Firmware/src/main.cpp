@@ -70,6 +70,19 @@ void loop()
 		Serial.println();
 	}
 
+#elif defined(MOTOR_SPEED_TEST)
+
+	// Send max motor voltages and print velocities
+	MotorL::set_voltage(BalBot::v_bus);
+	MotorR::set_voltage(BalBot::v_bus);
+	if (loop_count % 25 == 0)
+	{
+		Serial.println("Velocities [rad/s]:");
+		Serial.println("L: " + String(MotorL::get_velocity(), 2));
+		Serial.println("R: " + String(MotorR::get_velocity(), 2));
+		Serial.println();
+	}
+
 #elif defined(GET_MAX_CTRL_FREQ)
 
 	// Estimate maximum possible control frequency

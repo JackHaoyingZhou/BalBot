@@ -4,6 +4,7 @@
  */
 #include <Controller.h>
 #include <BalBot.h>
+#include <MotorConfig.h>
 #include <Bluetooth.h>
 #include <MotorL.h>
 #include <MotorR.h>
@@ -12,6 +13,10 @@
 #include <Pid.h>
 #include <SlewLimiter.h>
 #include <Arduino.h>
+using MotorConfig::Vb;
+using MotorConfig::Kv;
+using MotorConfig::Kt;
+using MotorConfig::R;
 
 namespace Controller
 {
@@ -23,10 +28,6 @@ namespace Controller
 	const float dg = 0.062f;	// CG height [m]
 	const float dw = 0.085f;	// Wheel to CG Z-axis [m]
 	const float dr = 0.034;		// Wheel radius [m]
-	const float R = 5.4f;		// Motor resistance [Ohm]
-	const float Kv = 0.34f;		// Back-EMF constant [V/(rad/s)]
-	const float Kt = 0.20f;		// Torque constant [N*m/A]
-	const float Vb = 12.0f;		// Battery voltage [V]
 
 	// Derived Physical Constants
 	const float Mx = Ix*dr/dg;	// Generalized X-mass [kg*m^2]

@@ -7,6 +7,10 @@
 
 namespace MotorConfig
 {
-	const extern float direction;	// Motor direction (+1 for regular, -1 for reversed)
-	const extern float cnt_per_rev;	// Encoder counts per revolution
+	const extern float Vb;			// Battery voltage [V]
+	const extern float R;			// Resistance [Ohm]
+	const extern float Kv;			// Voltage constant [V/(rad/s)]
+	const extern float Kt;			// Torque constant [N*m/A]
+	const extern float direction;	// Motor direction [+1, -1]
+	const extern float enc_cpr;		// Encoder resolution [cnt/rev]
 }

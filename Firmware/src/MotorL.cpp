@@ -9,6 +9,9 @@
 #include <HBridgeMotor.h>
 #include <QuadEncoder.h>
 #include <DiscreteFilter.h>
+using BalBot::f_ctrl;
+using MotorConfig::Vb;
+using MotorConfig::enc_cpr;
 
 namespace MotorL
 {
@@ -21,11 +24,11 @@ namespace MotorL
 	const uint8_t pin_enc_b = 3;	// Encoder channel B
 
 	// Hardware Interfaces
-	HBridgeMotor motor(pin_pwm, pin_fwd, pin_rev, BalBot::v_bus);
-	QuadEncoder encoder(pin_enc_a, pin_enc_b, MotorConfig::cnt_per_rev);
+	HBridgeMotor motor(pin_pwm, pin_fwd, pin_rev, Vb);
+	QuadEncoder encoder(pin_enc_a, pin_enc_b, enc_cpr);
 
 	// Digital Filters
-	DiscreteFilter angle_diff = DiscreteFilter::make_dif(BalBot::f_ctrl);
+	DiscreteFilter angle_diff = DiscreteFilter::make_dif(f_ctrl);
 
 	// State Variables
 	float angle;		// Encoder angle [rad]

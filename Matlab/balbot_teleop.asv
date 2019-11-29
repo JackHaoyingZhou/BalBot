@@ -78,8 +78,8 @@ while 1
             yaw_cmd(log_i) = -yaw_max * ctrl.joy_x();
     end
     
+    % Send commands to robot and get state
     try
-        % Send commands to robot and get state
         state = balbot.send_cmds(lin_cmd(log_i), yaw_cmd(log_i));
         
         % Display state
@@ -102,12 +102,11 @@ while 1
     catch
         % Communication error
         log_i = log_i - 1;
-        com_error = 1;
+        com_error
     end
     
     % Exit conditions
-    exit_btn = ctrl.btn_B();
-    if exit_btn || com_error
+    if ctrl.btn_B()
         lin_cmd = lin_cmd(1:log_i);
         lin_vel = lin_vel(1:log_i);
         yaw_cmd = yaw_cmd(1:log_i);
@@ -115,11 +114,7 @@ while 1
         volts_L = volts_L(1:log_i);
         volts_R = volts_R(1:log_i);
         t = t(1:log_i);
-        if exit_btn
-            fprintf('\nProgram terminated by user.\n')
-        elseif com_error
-            fprintf('\nBluetooth communication error.\n')
-        end
+        fprintf('\nProgram terminated by user.\n')
         break
     end
     if log_i == log_n
