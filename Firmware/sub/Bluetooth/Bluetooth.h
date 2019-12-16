@@ -12,6 +12,6 @@ namespace Bluetooth
 {
 	void init();
 	void update();
-	float get_vel_cmd();
-	float get_yaw_cmd();
+	float get_lin_vel_cmd();
+	float get_yaw_vel_cmd();
 }

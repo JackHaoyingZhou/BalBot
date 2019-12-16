@@ -102,9 +102,9 @@ void Controller::init()
 void Controller::update()
 {
 	// Process teleop commands
-	vel_cmd = vel_slew.update(Bluetooth::get_vel_cmd());
+	vel_cmd = vel_slew.update(Bluetooth::get_lin_vel_cmd());
 	vel_cmd = clamp(vel_cmd, -vel_max, vel_max);
-	yaw_cmd = clamp(Bluetooth::get_yaw_cmd(), -yaw_max, yaw_max);
+	yaw_cmd = clamp(Bluetooth::get_yaw_vel_cmd(), -yaw_max, yaw_max);
 
 	// Estimate state variables
 	lin_vel = dr_div_2 * (MotorL::get_velocity() + MotorR::get_velocity());

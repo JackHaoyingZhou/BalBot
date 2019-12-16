@@ -10,16 +10,15 @@
 namespace ImuConfig
 {
 #if ES3011_BOT_ID == 0
-	#warning NOT RECALIBRATED!
-	const float gyr_x_cal = +0.0000000000000f;
-	const float gyr_y_cal = +0.0000000000000f;
-	const float gyr_z_cal = +0.0000000000000f;
-	const float gyr_x_var = 0.00000000000000f;
-	const float gyr_y_var = 0.00000000000000f;
-	const float gyr_z_var = 0.00000000000000f;
-	const float acc_x_var = 0.00000000000000f;
-	const float acc_y_var = 0.00000000000000f;
-	const float acc_z_var = 0.00000000000000f;
+	const float gyr_x_cal = -0.0734113680000f;
+	const float gyr_y_cal = +0.0269964600000f; 
+	const float gyr_z_cal = +0.0101013720000f;
+	const float gyr_x_var = 0.00000228365390f;
+	const float gyr_y_var = 0.00000283399940f;
+	const float gyr_z_var = 0.00000185751390f;
+	const float acc_x_var = 0.00112722710000f;
+	const float acc_y_var = 0.00090445904000f;
+	const float acc_z_var = 0.00162959800000f;
 #elif ES3011_BOT_ID == 1
 	const float gyr_x_cal = +0.0003701793300f;
 	const float gyr_y_cal = -0.0758841110000f;

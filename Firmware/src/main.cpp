@@ -1,6 +1,6 @@
 /**
  * @file main.cpp
- * @brief Main control code for BalBot.
+ * @brief Main control code for BalBot
  * @author Dan Oates (WPI Class of 2020)
  */
 

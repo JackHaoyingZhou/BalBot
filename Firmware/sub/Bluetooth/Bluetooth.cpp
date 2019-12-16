@@ -17,8 +17,8 @@ namespace Bluetooth
 	const uint32_t baud = 57600;
 
 	// Received commands
-	float vel_cmd = 0.0f;	// Linear velocity [m/s]
-	float yaw_cmd = 0.0f;	// Yaw velocity [rad/s]
+	float lin_vel_cmd = 0.0f;	// Linear velocity [m/s]
+	float yaw_vel_cmd = 0.0f;	// Yaw velocity [rad/s]
 
 	// Init flag
 	bool init_complete = false;
@@ -50,8 +50,8 @@ void Bluetooth::update()
 {
 	if(Serial.available() >= 8)
 	{
-		serial.rx(vel_cmd);
-		serial.rx(yaw_cmd);
+		serial.rx(lin_vel_cmd);
+		serial.rx(yaw_vel_cmd);
 		serial.tx(Controller::get_lin_vel());
 		serial.tx(Imu::get_yaw_vel());
 		serial.tx(Controller::get_motor_L_cmd());
@@ -62,15 +62,15 @@ void Bluetooth::update()
 /**
  * @brief Returns linear velocity command [m/s]
  */
-float Bluetooth::get_vel_cmd()
+float Bluetooth::get_lin_vel_cmd()
 {
-	return vel_cmd;
+	return lin_vel_cmd;
 }
 
 /**
  * @brief Returns yaw velocity command [rad/s]
  */
-float Bluetooth::get_yaw_cmd()
+float Bluetooth::get_yaw_vel_cmd()
 {
-	return yaw_cmd;
+	return yaw_vel_cmd;
 }
