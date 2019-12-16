@@ -17,6 +17,9 @@ namespace Controller
 	// Methods
 	void init();
 	void update();
+	void set_lin_vel_max(float lin_vel_max);
+	void set_lin_acc_max(float lin_acc_max);
+	void set_yaw_vel_max(float yaw_vel_max);
 	float get_lin_vel();
 	float get_motor_L_cmd();
 	float get_motor_R_cmd();

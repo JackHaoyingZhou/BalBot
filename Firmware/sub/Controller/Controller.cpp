@@ -45,10 +45,10 @@ namespace Controller
 	const float Gw = Kv*dw/dr;	// Yaw back-EMF [V/(rad/s)]
 
 	// Controller Constants
-	const float pitch_max = 0.5f;	// Max pitch angle [rad]
-	const float yaw_max = 1.6f;		// Yaw velocity limit [rad/s]
-	const float vel_max = 0.8f;		// Velocity limit [m/s]
-	const float acc_max = 0.8f;		// Acceleration limit [m/s^2]
+	const float pitch_max = 0.8f;	// Max pitch angle [rad]
+	const float lin_vel_max = 0.4f;	// Default max linear velocity [rad/s]
+	const float lin_acc_max = 0.2f;	// Default max linear acceleratino [rad/s]
+	const float yaw_vel_max = 0.8f;	// Default max yaw velocity [rad/s]
 	const float px = 20.0f;			// Pitch-velocity pole [1/s]
 	const float pz = 80.0f;			// Yaw velocity pole [1/s]
 	const float dr_div_2 = dr/2.0f;	// Half wheel radius [m]
@@ -63,16 +63,20 @@ namespace Controller
 	const float yaw_Ki = 5.0f;
 	const float yaw_Kd = 0.0f;
 
+	// State Variables
+	float lin_vel = 0.0f;		// Linear velocity [m/s]
+	float lin_vel_cmd = 0.0f;	// Linear velocity command [m/s]
+	float yaw_vel = 0.0f;		// Yaw velocity [rad/s]
+	float yaw_vel_cmd = 0.0f;	// Yaw velocity command [rad/s]
+	float v_cmd_L = 0.0f;		// L motor voltage cmd [V]
+	float v_cmd_R = 0.0f;		// R motor voltage cmd [V]
+
 	// Controllers
 	PID yaw_pid(yaw_Kp, yaw_Ki, yaw_Kd, -Vb, Vb, f_ctrl);
-	SlewLimiter vel_slew(acc_max, f_ctrl);
-
-	// State Variables
-	float lin_vel = 0.0f;	// Linear velocity [m/s]
-	float vel_cmd = 0.0f;	// Linear velocity cmd [m/s]
-	float yaw_cmd = 0.0f;	// Yaw velocity cmd [rad/s]
-	float v_cmd_L = 0.0f;	// Left motor voltage cmd [V]
-	float v_cmd_R = 0.0f;	// Right motor voltage cmd [V]
+	ClampLimiter lin_vel_limiter(lin_vel_max);
+	SlewLimiter lin_acc_limiter(lin_acc_max, f_ctrl);
+	ClampLimiter yaw_vel_limiter(yaw_vel_max);
+	ClampLimiter volt_limiter(Vb);
 
 	// Init Flag
 	bool init_complete = false;
@@ -102,29 +106,30 @@ void Controller::init()
 void Controller::update()
 {
 	// Process teleop commands
-	vel_cmd = vel_slew.update(Bluetooth::get_lin_vel_cmd());
-	vel_cmd = clamp(vel_cmd, -vel_max, vel_max);
-	yaw_cmd = clamp(Bluetooth::get_yaw_vel_cmd(), -yaw_max, yaw_max);
+	lin_vel_cmd = Bluetooth::get_lin_vel_cmd();
+	lin_vel_cmd = lin_acc_limiter.update(lin_vel_cmd);
+	lin_vel_cmd = lin_vel_limiter.update(lin_vel_cmd);
+	yaw_vel_cmd = yaw_vel_limiter.update(Bluetooth::get_yaw_vel_cmd());
 
 	// Estimate state variables
 	lin_vel = dr_div_2 * (MotorL::get_velocity() + MotorR::get_velocity());
 	
 	// Pitch-Velocity State-Space Control
-	const float v_avg_ref = Gv * vel_cmd;
+	const float v_avg_ref = Gv * lin_vel_cmd;
 	float v_avg = v_avg_ref
 		+ ss_K1 * (0.0f - Imu::get_pitch_vel())
 		+ ss_K2 * (0.0f - Imu::get_pitch())
-		+ ss_K3 * (vel_cmd - lin_vel);
+		+ ss_K3 * (lin_vel_cmd - lin_vel);
 	v_avg = clamp(v_avg, -Vb, Vb);
 
 	// Yaw velocity control
-	const float yaw_ff = Gw * yaw_cmd;
-	const float yaw_error = yaw_cmd - Imu::get_yaw_vel();
+	const float yaw_ff = Gw * yaw_vel_cmd;
+	const float yaw_error = yaw_vel_cmd - Imu::get_yaw_vel();
 	const float v_diff = yaw_pid.update(yaw_error, yaw_ff);
 
 	// Motor voltage commands
-	v_cmd_L = clamp(v_avg - v_diff, -Vb, Vb);
-	v_cmd_R = clamp(v_avg + v_diff, -Vb, Vb);
+	v_cmd_L = volt_limiter.update(v_avg - v_diff);
+	v_cmd_R = volt_limiter.update(v_avg + v_diff);
 
 	// Disable motors if tipped over
 	if(fabsf(Imu::get_pitch()) > pitch_max)
@@ -133,6 +138,33 @@ void Controller::update()
 		v_cmd_L = 0.0f;
 		v_cmd_R = 0.0f;
 	}
+}
+
+/**
+ * @brief Sets max linear velocity command [rad/s]
+ */
+void Controller::set_lin_vel_max(float lin_vel_max)
+{
+	lin_vel_limiter.set_min(-lin_vel_max);
+	lin_vel_limiter.set_max(+lin_vel_max);
+}
+
+/**
+ * @brief Sets max linear acceleration command [rad/s]
+ */
+void Controller::set_lin_acc_max(float lin_acc_max)
+{
+	lin_acc_limiter.set_min(-lin_acc_max);
+	lin_acc_limiter.set_max(+lin_acc_max);
+}
+
+/**
+ * @brief Sets max yaw velocity command [rad/s]
+ */
+void Controller::set_yaw_vel_max(float yaw_vel_max)
+{
+	yaw_vel_limiter.set_min(-yaw_vel_max);
+	yaw_vel_limiter.set_max(+yaw_vel_max);
 }
 
 /**
