@@ -46,9 +46,6 @@ namespace Controller
 
 	// Controller Constants
 	const float pitch_max = 0.8f;	// Max pitch angle [rad]
-	const float lin_vel_max = 0.4f;	// Default max linear velocity [rad/s]
-	const float lin_acc_max = 0.2f;	// Default max linear acceleratino [rad/s]
-	const float yaw_vel_max = 0.8f;	// Default max yaw velocity [rad/s]
 	const float px = 20.0f;			// Pitch-velocity pole [1/s]
 	const float pz = 80.0f;			// Yaw velocity pole [1/s]
 	const float dr_div_2 = dr/2.0f;	// Half wheel radius [m]
@@ -73,9 +70,6 @@ namespace Controller
 
 	// Controllers
 	PID yaw_pid(yaw_Kp, yaw_Ki, yaw_Kd, -Vb, Vb, f_ctrl);
-	ClampLimiter lin_vel_limiter(lin_vel_max);
-	SlewLimiter lin_acc_limiter(lin_acc_max, f_ctrl);
-	ClampLimiter yaw_vel_limiter(yaw_vel_max);
 	ClampLimiter volt_limiter(Vb);
 
 	// Init Flag
@@ -105,13 +99,11 @@ void Controller::init()
  */
 void Controller::update()
 {
-	// Process teleop commands
+	// Get teleop commands
 	lin_vel_cmd = Bluetooth::get_lin_vel_cmd();
-	lin_vel_cmd = lin_acc_limiter.update(lin_vel_cmd);
-	lin_vel_cmd = lin_vel_limiter.update(lin_vel_cmd);
-	yaw_vel_cmd = yaw_vel_limiter.update(Bluetooth::get_yaw_vel_cmd());
+	yaw_vel_cmd = Bluetooth::get_yaw_vel_cmd();
 
-	// Estimate state variables
+	// Estimate linear velocity
 	lin_vel = dr_div_2 * (MotorL::get_velocity() + MotorR::get_velocity());
 	
 	// Pitch-Velocity State-Space Control
@@ -138,33 +130,6 @@ void Controller::update()
 		v_cmd_L = 0.0f;
 		v_cmd_R = 0.0f;
 	}
-}
-
-/**
- * @brief Sets max linear velocity command [rad/s]
- */
-void Controller::set_lin_vel_max(float lin_vel_max)
-{
-	lin_vel_limiter.set_min(-lin_vel_max);
-	lin_vel_limiter.set_max(+lin_vel_max);
-}
-
-/**
- * @brief Sets max linear acceleration command [rad/s]
- */
-void Controller::set_lin_acc_max(float lin_acc_max)
-{
-	lin_acc_limiter.set_min(-lin_acc_max);
-	lin_acc_limiter.set_max(+lin_acc_max);
-}
-
-/**
- * @brief Sets max yaw velocity command [rad/s]
- */
-void Controller::set_yaw_vel_max(float yaw_vel_max)
-{
-	yaw_vel_limiter.set_min(-yaw_vel_max);
-	yaw_vel_limiter.set_max(+yaw_vel_max);
 }
 
 /**
