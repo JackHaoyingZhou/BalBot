@@ -4,7 +4,7 @@ classdef BalBot < handle
 
     properties (Access = private)
         device_name;    % Bluetooth device name [String]
-        serial_comms;   % Embedded comms interface [SerialComms]
+        serial;         % Embedded serial interface [SerialStruct]
         lin_vel_lim;    % Linear velocity limiter [ClampLimiter]
         lin_acc_lim;    % Linear acceleration limiter [SlewLimiter]
         yaw_vel_lim;    % Yaw velocity limiter [ClampLimiter]
@@ -41,12 +41,12 @@ classdef BalBot < handle
             if isempty(bt)
                 error('Bluetooth not found.')
             end
-            obj.serial_comms = SerialComms(bt);
-            obj.serial_comms.open();
+            obj.serial = SerialStruct(bt, 1);
+            fopen(obj.serial.get_serial());
         end
         function disconnect(obj)
             %DISCONNECT Disconnects from bluetooth
-            obj.serial_comms.close();
+            fclose(obj.serial.get_serial());
         end
         function state = send_cmds(obj, lin_vel_cmd, yaw_vel_cmd)
             %SEND_CMDS Sends commands and returns state struct
@@ -67,21 +67,17 @@ classdef BalBot < handle
             yaw_vel_cmd = obj.yaw_vel_lim.update(yaw_vel_cmd);
             
             % Send filtered commands
-            obj.serial_comms.write_float(lin_vel_cmd);
-            obj.serial_comms.write_float(yaw_vel_cmd);
+            obj.serial.write(lin_vel_cmd, 'single');
+            obj.serial.write(yaw_vel_cmd, 'single');
             
             % Get state from robot
             state = struct();
             state.lin_vel_cmd = lin_vel_cmd;
             state.yaw_vel_cmd = yaw_vel_cmd;
-            if obj.serial_comms.wait(16, 1)
-                state.lin_vel = obj.serial_comms.read_float();
-                state.yaw_vel = obj.serial_comms.read_float();
-                state.volts_L = obj.serial_comms.read_float();
-                state.volts_R = obj.serial_comms.read_float();
-            else
-                error('Communication timeout.')
-            end
+            state.lin_vel = obj.serial.read('single');
+            state.yaw_vel = obj.serial.read('single');
+            state.volts_L = obj.serial.read('single');
+            state.volts_R = obj.serial.read('single');
         end
     end
 end
