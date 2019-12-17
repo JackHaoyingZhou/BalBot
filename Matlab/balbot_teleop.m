@@ -47,8 +47,6 @@ fprintf('Balancing Robot Controller\n\n')
 fprintf(['Connecting to robot ''' bot_name ''' ...\n'])
 balbot = BalBot(bot_name, lin_vel_max, lin_acc_max, yaw_vel_max);
 balbot.connect();
-fprintf('Connected.\n\n')
-pause(1)    % TODO try lowering
 
 % Log vectors
 log_n = 10000;
