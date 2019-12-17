@@ -43,11 +43,12 @@ end
 
 % Connect to robot
 clc
-fprintf('Balancing Robot Controller\n')
+fprintf('Balancing Robot Controller\n\n')
 fprintf(['Connecting to robot ''' bot_name ''' ...\n'])
 balbot = BalBot(bot_name, lin_vel_max, lin_acc_max, yaw_vel_max);
 balbot.connect();
-pause(2)
+fprintf('Connected.\n\n')
+pause(1)    % TODO try lowering
 
 % Log vectors
 log_n = 10000;
@@ -78,6 +79,8 @@ while 1
     try
         % Send commands to robot and get state
         state = balbot.send_cmds(lin_vel_cmd(log_i), yaw_vel_cmd(log_i));
+        lin_vel_cmd(log_i) = state.lin_vel_cmd;
+        yaw_vel_cmd(log_i) = state.yaw_vel_cmd;
         
         % Display state
         clc

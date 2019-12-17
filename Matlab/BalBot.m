@@ -50,26 +50,36 @@ classdef BalBot < handle
             %DISCONNECT Disconnects from bluetooth.
             obj.serial_comms.close();
         end
-        function state = send_cmds(obj, lin_vel, yaw_vel)
+        function state = send_cmds(obj, lin_vel_cmd, yaw_vel_cmd)
             %SEND_CMDS Sends commands and returns state struct.
-            %   vel = Linear velocity command [m/s]
-            %   yaw = Yaw velocity command [rad/s]
+            %   lin_vel_cmd = Linear velocity cmd [m/s]
+            %   yaw_vel_cmd = Yaw velocity cmd [rad/s]
+            %   state.lin_vel_cmd = Limited linear velocity cmd [m/s]
+            %   state.yaw_vel_cmd = Limited yaw velocity cmd [rad/s]
             %   state.lin_vel = Robot linear velocity [m/s]
             %   state.yaw_vel = Robot yaw velocity [rad/s]
             %   state.volts_L = Left motor voltage [V]
             %   state.volts_R = Right motor voltage [V]
-            lin_vel = clamp_limit(...
-                lin_vel, ...
+            
+            % Filter input commands
+            lin_vel_cmd = clamp_limit(...
+                lin_vel_cmd, ...
                 -obj.lin_vel_max, ...
                 +obj.lin_vel_max);
-            lin_vel = obj.acc_limiter.update(lin_vel);
-            yaw_vel = clamp_limit(...
-                yaw_vel, ...
+            lin_vel_cmd = obj.acc_limiter.update(lin_vel_cmd);
+            yaw_vel_cmd = clamp_limit(...
+                yaw_vel_cmd, ...
                 -obj.yaw_vel_max, ...
                 +obj.yaw_vel_max);
-            obj.serial_comms.write_float(lin_vel);
-            obj.serial_comms.write_float(yaw_vel);
+            
+            % Send filtered commands
+            obj.serial_comms.write_float(lin_vel_cmd);
+            obj.serial_comms.write_float(yaw_vel_cmd);
+            
+            % Get state from robot
             state = struct();
+            state.lin_vel_cmd = lin_vel_cmd;
+            state.yaw_vel_cmd = yaw_vel_cmd;
             if obj.serial_comms.wait(16, 1)
                 state.lin_vel = obj.serial_comms.read_float();
                 state.yaw_vel = obj.serial_comms.read_float();
