@@ -5,19 +5,26 @@ classdef BalBot < handle
     properties (Access = private)
         device_name;    % Bluetooth device name [String]
         serial_comms;   % Embedded comms interface [SerialComms]
-        vel_cmd_max;    % Max velocity cmd [m/s]
-        yaw_cmd_max;    % Max yaw velocity cmd [rad/s]
+        lin_vel_max;    % Max linear velocity cmd [m/s]
+        lin_acc_max;    % Max linear acceleration command [m/s^2]
+        yaw_vel_max;    % Max yaw velocity cmd [rad/s]
     end
     
     methods
-        function obj = BalBot(device_name, vel_max, yaw_max)
+        function obj = BalBot(...
+                bot_name, ...
+                lin_vel_max, ...
+                lin_acc_max, ...
+                yaw_vel_max)
             %BALBOT Construct robot interface.
-            %   device_name = Bluetooth name (ex. 'ES3011_BOT01')
-            %   vel_max = Max linear velocity command [m/s]
-            %   yaw_max = Max yaw velocity command [rad/s]
-            obj.device_name = device_name;
-            obj.vel_cmd_max = vel_max;
-            obj.yaw_cmd_max = yaw_max;
+            %   bot_name = Bluetooth name [ex. 'ES3011_BOT01']
+            %   lin_vel_max = Max linear velocity command [m/s]
+            %   lin_acc_max = Max linear acceleration command [m/s^2]
+            %   yaw_vel_max = Max yaw velocity command [rad/s]
+            obj.device_name = bot_name;
+            obj.lin_vel_max = lin_vel_max;
+            obj.lin_acc_max = lin_acc_max;
+            obj.yaw_vel_max = yaw_vel_max;
         end
         function connect(obj)
             %CONNECT Resets bluetooth connection.
@@ -41,7 +48,7 @@ classdef BalBot < handle
             %DISCONNECT Disconnects from bluetooth.
             obj.serial_comms.close();
         end
-        function state = send_cmds(obj, vel, yaw)
+        function state = send_cmds(obj, lin_vel, yaw_vel)
             %SEND_CMDS Sends commands and returns state struct.
             %   vel = Linear velocity command [m/s]
             %   yaw = Yaw velocity command [rad/s]
@@ -49,10 +56,16 @@ classdef BalBot < handle
             %   state.yaw_vel = Robot yaw velocity [rad/s]
             %   state.volts_L = Left motor voltage [V]
             %   state.volts_R = Right motor voltage [V]
-            vel = clamp_limit(vel, -obj.vel_cmd_max, obj.vel_cmd_max);
-            yaw = clamp_limit(yaw, -obj.yaw_cmd_max, obj.yaw_cmd_max);
-            obj.serial_comms.write_float(vel);
-            obj.serial_comms.write_float(yaw);
+            lin_vel = clamp_limit(...
+                lin_vel, ...
+                -obj.lin_vel_max, ...
+                +obj.lin_vel_max);
+            yaw_vel = clamp_limit(...
+                yaw_vel, ...
+                -obj.yaw_vel_max, ...
+                +obj.yaw_vel_max);
+            obj.serial_comms.write_float(lin_vel);
+            obj.serial_comms.write_float(yaw_vel);
             state = struct();
             if obj.serial_comms.wait(16, 1)
                 state.lin_vel = obj.serial_comms.read_float();

@@ -45,7 +45,7 @@ end
 clc
 fprintf('Balancing Robot Controller\n')
 fprintf(['Connecting to robot ''' bot_name ''' ...\n'])
-balbot = BalBot(bot_name, lin_vel_max, yaw_vel_max);
+balbot = BalBot(bot_name, lin_vel_max, lin_acc_max, yaw_vel_max);
 balbot.connect();
 pause(2)
 
