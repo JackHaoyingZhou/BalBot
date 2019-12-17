@@ -5,30 +5,18 @@ function balbot_teleop(name, ctrl_type, vel_max, yaw_max)
 %   vel_max = Max linear velocity command [m/s]
 %   yaw_max = Max yaw velocity command [rad/s]
 
-% Default name and controller
+% Default arguments
 if nargin < 1
     name = 'BalBot';
 end
 if nargin < 2
-    ctrl_type = 'Nintendo64';
+    ctrl_type = 'Xbox360';
 end
-
-% Default velocity limits
 if nargin < 3
-    switch name
-        case {'BalBot', 'ES3011_BOT01'}
-            vel_max = 0.8;
-        otherwise
-            vel_max = 0.4;
-    end
+    vel_max = 0.8;
 end
 if nargin < 4
-    switch name
-        case {'BalBot', 'ES3011_BOT01'}
-            yaw_max = 1.6;
-        otherwise
-            yaw_max = 0.8;
-    end
+    yaw_max = 1.6;
 end
 
 % Create game controller interface
