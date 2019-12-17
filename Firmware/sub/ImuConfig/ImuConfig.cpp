@@ -30,16 +30,15 @@ namespace ImuConfig
 	const float acc_y_var = 0.00102186380000f;
 	const float acc_z_var = 0.00129695180000f;
 #elif ES3011_BOT_ID == 2
-	#warning NOT RECALIBRATED!
-	const float gyr_x_cal = +0.0000000000000f;
-	const float gyr_y_cal = +0.0000000000000f;
-	const float gyr_z_cal = +0.0000000000000f;
-	const float gyr_x_var = 0.00000000000000f;
-	const float gyr_y_var = 0.00000000000000f;
-	const float gyr_z_var = 0.00000000000000f;
-	const float acc_x_var = 0.00000000000000f;
-	const float acc_y_var = 0.00000000000000f;
-	const float acc_z_var = 0.00000000000000f;
+	const float gyr_x_cal = -0.0719998850000f;
+	const float gyr_y_cal = +0.0160055890000f;
+	const float gyr_z_cal = +0.1958248800000f;
+	const float gyr_x_var = 0.00000883372190f;
+	const float gyr_y_var = 0.00000227666920f;
+	const float gyr_z_var = 0.00000215141040f;
+	const float acc_x_var = 0.00101798410000f;
+	const float acc_y_var = 0.00107184890000f;
+	const float acc_z_var = 0.00253210360000f;
 #elif ES3011_BOT_ID == 3
 	const float gyr_x_cal = -0.0461459160000f;
 	const float gyr_y_cal = +0.0048815743000f;
@@ -50,6 +49,17 @@ namespace ImuConfig
 	const float acc_x_var = 0.00102829980000f;
 	const float acc_y_var = 0.00118071350000f;
 	const float acc_z_var = 0.00219102880000f;
+#elif ES3011_BOT_ID > 3 && ES3011_BOT_ID <= 20
+	#warning "Not calibrated!"
+	const float gyr_x_cal = 0.0f;
+	const float gyr_y_cal = 0.0f;
+	const float gyr_z_cal = 0.0f;
+	const float gyr_x_var = 1.0f;
+	const float gyr_y_var = 1.0f;
+	const float gyr_z_var = 1.0f;
+	const float acc_x_var = 1.0f;
+	const float acc_y_var = 1.0f;
+	const float acc_z_var = 1.0f;
 #else
 #error Must define ES3011_BOT_ID in range [0, 20]
 #endif

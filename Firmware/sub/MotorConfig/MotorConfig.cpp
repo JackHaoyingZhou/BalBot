@@ -18,20 +18,12 @@ namespace MotorConfig
 	// Robot-Specific Constants
 	// direction = Motor direction [+1, -1]
 	// tr = Torque ratio [(N*m)/(N*m)]
-	#if ES3011_BOT_ID == 0
+	#if ES3011_BOT_ID <= 1
 		const float direction = +1.0f;
 		const float tr = +30.0f;
-	#elif ES3011_BOT_ID == 1
-		const float direction = +1.0f;
-		const float tr = +30.0f;
-	#elif ES3011_BOT_ID == 2
-		const float direction = -1.0f;
-		const float tr = +56.0f;
-	#elif ES3011_BOT_ID == 3
-		const float direction = -1.0f;
-		const float tr = +56.0f;
 	#else
-	#error Must define ES3011_BOT_ID in range [0, 20]
+		const float direction = -1.0f;
+		const float tr = +56.0f;
 	#endif
 
 	// Derived Constants

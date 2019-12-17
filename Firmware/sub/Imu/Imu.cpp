@@ -38,7 +38,6 @@ void Imu::init()
 	{
 		// Init I2CC
 		wire->begin();
-		// TODO increase clock rate?
 
 		// Init IMU
 		bool success = imu.init();
