@@ -49,7 +49,7 @@ namespace ImuConfig
 	const float acc_x_var = 0.00102829980000f;
 	const float acc_y_var = 0.00118071350000f;
 	const float acc_z_var = 0.00219102880000f;
-#elif ES3011_BOT_ID > 3 && ES3011_BOT_ID <= 20
+#elif ES3011_BOT_ID <= 20
 	#warning "Not calibrated!"
 	const float gyr_x_cal = 0.0f;
 	const float gyr_y_cal = 0.0f;
