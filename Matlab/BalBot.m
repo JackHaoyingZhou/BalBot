@@ -6,8 +6,9 @@ classdef BalBot < handle
         device_name;    % Bluetooth device name [String]
         serial_comms;   % Embedded comms interface [SerialComms]
         lin_vel_max;    % Max linear velocity cmd [m/s]
-        lin_acc_max;    % Max linear acceleration command [m/s^2]
+        lin_acc_max;    % Max linear acceleration cmd [m/s^2]
         yaw_vel_max;    % Max yaw velocity cmd [rad/s]
+        acc_limiter;    % Command acceleration limiter [SlewLimiter]
     end
     
     methods
@@ -25,6 +26,7 @@ classdef BalBot < handle
             obj.lin_vel_max = lin_vel_max;
             obj.lin_acc_max = lin_acc_max;
             obj.yaw_vel_max = yaw_vel_max;
+            obj.acc_limiter = SlewLimiter(-lin_acc_max, lin_acc_max, 10.0); % Bullshit frequency - fix
         end
         function connect(obj)
             %CONNECT Resets bluetooth connection.
@@ -60,6 +62,7 @@ classdef BalBot < handle
                 lin_vel, ...
                 -obj.lin_vel_max, ...
                 +obj.lin_vel_max);
+            lin_vel = obj.acc_limiter.update(lin_vel);
             yaw_vel = clamp_limit(...
                 yaw_vel, ...
                 -obj.yaw_vel_max, ...
