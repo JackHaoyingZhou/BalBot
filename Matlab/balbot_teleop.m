@@ -4,49 +4,36 @@ function balbot_teleop(...
     lin_vel_max, ...
     lin_acc_max, ...
     yaw_vel_max)
-%BALBOT_TELEOP Runs bluetooth teleoperation of self-balancing robot.
-%   bot_name = Bluetooth device name [ex. 'ES3011_BOT01']
-%   ctrl_type = Controller type ['Xbox360', 'Nintendo64']
-%   lin_vel_max = Max linear velocity command [m/s]
-%   lin_acc_max = Max linear acceleration command [m/s^2]
-%   yaw_vel_max = Max yaw velocity command [rad/s]
+%BALBOT_TELEOP(bot_name, ctrl_type, lin_vel_max, lin_acc_max, yaw_vel_max)
+%   Run bluetooth teleoperation of self-balancing robot
+%   
+%   Inputs:
+%   - bot_name = Bluetooth device name [ex. 'ES3011_BOT01']
+%   - ctrl_type = Controller type ['Xbox360', 'Nint64']
+%   - lin_vel_max = Max linear velocity command [m/s]
+%   - lin_acc_max = Max linear acceleration command [m/s^2]
+%   - yaw_vel_max = Max yaw velocity command [rad/s]
+clc, instrreset;
 
 % Default arguments
-if nargin < 1
-    bot_name = 'BalBot';
-end
-if nargin < 2
-    ctrl_type = 'Xbox360';
-end
-if nargin < 3
-    lin_vel_max = 0.8;
-end
-if nargin < 4
-    lin_acc_max = 0.8;
-end
-if nargin < 5
-    yaw_vel_max = 1.6;
-end
+if nargin < 1, bot_name = 'BalBot'; end
+if nargin < 2, ctrl_type = 'Xbox360'; end
+if nargin < 3, lin_vel_max = 0.8; end
+if nargin < 4, lin_acc_max = 0.8; end
+if nargin < 5, yaw_vel_max = 1.6; end
 
-% Create game controller interface
+% Create game controller
 switch ctrl_type
-    case 'Xbox360'
-        joy_dz = 0.08;
-        trig_dz = 0.01;
-        ctrl = Xbox360(1, joy_dz, trig_dz);
-    case 'Nintendo64'
-        joy_dz = 0.04;
-        ctrl = Nintendo64(1, joy_dz);
-    otherwise
-        error('Invalid controller type')
+    case 'Xbox360', ctrl = game_ctrl.Xbox360();
+    case 'Nint64', ctrl = game_ctrl.Nint64();
+    otherwise, error('Invalid controller type')
 end
+ctrl.auto_dzs();
 
 % Connect to robot
-clc
 fprintf('Balancing Robot Controller\n\n')
 fprintf(['Connecting to robot ''' bot_name ''' ...\n'])
 balbot = BalBot(bot_name, lin_vel_max, lin_acc_max, yaw_vel_max);
-balbot.connect();
 
 % Log vectors
 log_n = 10000;
@@ -59,7 +46,7 @@ volts_R = zeros(log_n, 1);
 t = zeros(log_n, 1);
 
 % Communication loop
-timer = Timer();
+timer = timing.Timer();
 com_error = 0;
 log_i = 1;
 while 1
@@ -67,13 +54,14 @@ while 1
     % Get commands from game controller
     switch ctrl_type
         case 'Xbox360'
-            lin_vel_cmd(log_i) = lin_vel_max * ctrl.trig();
-            yaw_vel_cmd(log_i) = -yaw_vel_max * ctrl.joy_Lx();
-        case 'Nintendo64'
-            lin_vel_cmd(log_i) = lin_vel_max * ctrl.joy_y();
-            yaw_vel_cmd(log_i) = -yaw_vel_max * ctrl.joy_x();
+            lin_vel_cmd(log_i) = -lin_vel_max * ctrl.axis('Trig');
+            yaw_vel_cmd(log_i) = -yaw_vel_max * ctrl.axis('LX');
+        case 'Nint64'
+            lin_vel_cmd(log_i) = lin_vel_max * ctrl.axis('JY');
+            yaw_vel_cmd(log_i) = -yaw_vel_max * ctrl.axis('JX');
     end
     
+    % Robot communication
     try
         % Send commands to robot and get state
         state = balbot.send_cmds(lin_vel_cmd(log_i), yaw_vel_cmd(log_i));
@@ -104,7 +92,7 @@ while 1
     end
     
     % Exit conditions
-    exit_btn = ctrl.btn_B();
+    exit_btn = ctrl.btn('B');
     if exit_btn || com_error
         lin_vel_cmd = lin_vel_cmd(1:log_i);
         lin_vel = lin_vel(1:log_i);
@@ -131,7 +119,6 @@ end
 
 % Stop and disconnect from robot
 balbot.send_cmds(0, 0);
-balbot.disconnect();
 
 % Plot results
 figure(1)

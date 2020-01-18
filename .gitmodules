@@ -55,3 +55,15 @@
 [submodule "Firmware/lib/Timer"]
 	path = Firmware/lib/Timer
 	url = https://github.com/doates625/Timer.git
+[submodule "Matlab/+controls"]
+	path = Matlab/+controls
+	url = https://github.com/doates625/controls_m.git
+[submodule "Matlab/+serial_com"]
+	path = Matlab/+serial_com
+	url = https://github.com/doates625/serial_com_m.git
+[submodule "Matlab/+timing"]
+	path = Matlab/+timing
+	url = https://github.com/doates625/timing_m.git
+[submodule "Matlab/+game_ctrl"]
+	path = Matlab/+game_ctrl
+	url = https://github.com/doates625/game_ctrl_m
